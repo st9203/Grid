@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// 하단 그리드 생성 후 반환ID
+var myGridID2;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// 상단 그리드를 생성합니다.
+	createAUIGrid();
+	
+	// 하단 그리드를 생성합니다.
+	createDetailAUIGrid();
+	
+	// 데이터 요청하여 상단 그리드에 삽입
+	requestData("./data/normal_500.json");
+};
+
+// Master 그리드 를 생성합니다.
+function createAUIGrid() {
+	
+	// AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "id",
+		headerText : "ID",
+		width : 160
+	}, {
+		dataField : "name",
+		headerText : "Name",
+		width : 160
+	}, {
+		dataField : "flag",
+		headerText : "Flag IMG",
+		editable : false,
+		prefix : "./assets/",
+		renderer : {
+			type : "ImageRenderer",
+			imgHeight : 24,
+			altField : "country"
+		},
+		width : 140
+	}, {
+		dataField : "product",
+		headerText : "Product",
+		width : 180
+	}, {
+		dataField : "price",
+		headerText : "Price",
+		dataType : "numeric",
+		style : "my-column",
+		width : 180
+	}, {
+		dataField : "quantity",
+		headerText : "Quantity",
+		dataType : "numeric",
+		style : "my-column",
+		width : 160
+	}, {
+		dataField : "date",
+		headerText : "Date"
+	}];
+
+	
+	// 그리드 속성 설정
+	var gridPros = {
+			
+		// 행 소프트 제거 모드 해제
+		softRemoveRowMode : false,
+		
+		// 행 체크 칼럼(엑스트라 체크박스) 설정
+		showRowCheckColumn : true,
+		
+		noDataMessage : "하단의 그리드에서 체크하여 행을 여기로 옮기세요."
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, gridPros);
+	
+	// 셀클릭 이벤트 바인딩
+	AUIGrid.bind(myGridID, "cellClick", cellClickHandler);
+}
+
+// Details 그리드 생성
+function createDetailAUIGrid() {
+	
+	// AUIGrid 칼럼 설정
+	var columnLayout = [{
+		dataField : "id",
+		headerText : "ID",
+		width : 160
+	}, {
+		dataField : "name",
+		headerText : "Name",
+		width : 140
+	}, {
+		dataField : "country",
+		headerText : "Country",
+		width : 140
+	}, {
+		dataField : "product",
+		headerText : "Product",
+		width : 180
+	}];
+	
+	// 그리드 속성 설정
+	var gridPros = {
+		// 행 체크 칼럼(엑스트라 체크박스) 설정
+		showRowCheckColumn : true,
+		
+		// 행 소프트 제거 모드 해제
+		softRemoveRowMode : false,
+		
+		noDataMessage : "상단의 그리드에서 체크하여 행을 여기로 옮기세요."
+	};
+
+	// 실제로 #grid_wrap2 에 그리드 생성
+	myGridID2 = AUIGrid.create("#grid_wrap2", columnLayout, gridPros);
+	
+	// 셀클릭 이벤트 바인딩
+	AUIGrid.bind(myGridID2, "cellClick", cellClickHandler);
+	
+	// 최초 빈 배열로 초기화
+	AUIGrid.setGridData(myGridID2, []);
+};
+
+// 셀 클릭으로 엑스트라 체크박스 체크/해제 하기
+function cellClickHandler(event) {
+	var item = event.item, rowIdField, rowId;
+	rowIdField = AUIGrid.getProp(event.pid, "rowIdField"); // rowIdField 얻기
+	rowId = item[rowIdField];
+	// 이미 체크 선택되었는지 검사
+	if(AUIGrid.isCheckedRowById(event.pid, rowId)) {
+		// 엑스트라 체크박스 체크해제 추가
+		AUIGrid.addUncheckedRowsByIds(event.pid, rowId);
+	} else {
+		// 엑스트라 체크박스 체크 추가
+		AUIGrid.addCheckedRowsByIds(event.pid, rowId);
+	}
+};
+
+
+// 체크 행 아래로 이동 버턴 클릭
+function downBtnClick() {
+	// 상단 그리드의 체크된 행들 얻기
+	var rows = AUIGrid.getCheckedRowItemsAll(myGridID);
+	if(rows.length <= 0) {
+		alert('상단 그리드에서 체크된 행이 없습니다.');
+		return;
+	}
+	// 얻은 행을 하단 그리드에 추가하기
+	AUIGrid.addRow(myGridID2, rows, "last");
+	
+	// 선택한 상단 그리드 행들 삭제
+	// 삭제하면  "이동" 이고, 삭제하지 않으면 "복사" 를 구현할 수 있음.
+	AUIGrid.removeCheckedRows(myGridID);	
+};
+
+//체크 행 위로 이동 버턴 클릭
+function upBtnClick() {
+	// 하단 그리드의 체크된 행들 얻기
+	var rows = AUIGrid.getCheckedRowItemsAll(myGridID2);
+	if(rows.length <= 0) {
+		alert('하단 그리드에서 체크된 행이 없습니다.');
+		return;
+	}
+	// 얻은 행을 상단 그리드에 추가하기
+	AUIGrid.addRow(myGridID, rows, "last");
+	
+	// 선택한 하단 그리드 행들 삭제
+	// 삭제하면  "이동" 이고, 삭제하지 않으면 "복사" 를 구현할 수 있음.
+	AUIGrid.removeCheckedRows(myGridID2);	
+};
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>그리드 간의 행 이동을 보여주는 데모입니다.</p>
+		<p>엑스트라 체크박스를 통해 체크된 행 데이터를 다른 그리드의 행으로 추가하고, 기존 그리드의 체크된 행 데이터는 삭제하는 모습입니다.</p>
+		<p>만약 기존 그리드의 체크된 행 데이터를 삭제하지 않는다면 행 이동(move)이 아닌 행 복사(copy) 로 적용 가능합니다.</p>
+	</div>
+	<div>
+		<!-- 상단 Grid -->
+		<div id="grid_wrap" style="width:1200px; height:280px; margin:0 auto;"></div>
+		
+		<div style="width:1200px; margin:0 auto;  text-align:center;">
+			<span class="btn" onclick="downBtnClick();">체크 행(들) 아래로 이동(▼)</span>
+			<span class="btn" onclick="upBtnClick();">체크 행(들) 위로 이동(▲)</span>
+		</div>
+		
+		<!-- 하단 Grid -->
+		<div id="grid_wrap2" style="width:1200px; height:280px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

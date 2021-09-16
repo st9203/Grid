@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+<style type="text/css">
+
+/* 커스텀 칼럼 스타일 정의 */
+.my-left-column {
+	text-align:left;
+}
+.my-right-column {
+	text-align:right;
+}
+.my-center-column {
+	text-align:center;
+}
+</style>
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// AUIGrid 에 데이터 삽입합니다.
+	AUIGrid.setGridData(myGridID, gridData);
+
+};
+
+// AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "f1",
+		headerText : "왼쪽 정렬",
+		width : 160,
+		style : "my-left-column",
+		editRenderer : {
+			type : "InputEditRenderer",
+			showEditorBtnOver : true, // 마우스 오버 시 에디터버턴 보이기
+			textAlign : "left" // 인푸터 텍스트 왼쪽 정렬(기본값)
+		}
+	}, {
+		dataField : "f2",
+		headerText : "가운데 정렬",
+		width : 160,
+		style : "my-center-column",
+		editRenderer : {
+			type : "InputEditRenderer",
+			showEditorBtnOver : true, // 마우스 오버 시 에디터버턴 보이기
+			textAlign : "center" // 인푸터의 텍스트 정렬 가운데 설정
+		}
+	}, {
+		dataField : "f3",
+		headerText : "오른쪽 정렬",
+		width : 160,
+		style : "my-right-column",
+		headerTooltip : { // 헤더 툴팁 표시 HTML 양식
+			show : true,
+			tooltipHtml : "글자수 10개로 제한"
+		},
+		editRenderer : {
+			type : "InputEditRenderer",
+			showEditorBtnOver : true, // 마우스 오버 시 에디터버턴 보이기
+			textAlign : "right", // 인푸터의 텍스트 정렬 오른쪽 설정
+			maxlength : 10
+		}
+	}, {
+		dataField : "f4",
+		headerText : "숫자 입력",
+		dataType : "numeric",
+		style : "my-right-column",
+		width : 160,
+		headerTooltip : { // 헤더 툴팁 표시 HTML 양식
+			show : true,
+			tooltipHtml : "숫자만 입력 가능 설정<br/>입력 시 편집 인푸터 오른쪽 정렬<br/>천단위 구분자 자동 삽입"
+		},
+		editRenderer : {
+			type : "InputEditRenderer",
+			//showEditorBtnOver : true, // 마우스 오버 시 에디터버턴 보이기
+			onlyNumeric : true, // 0~9만 입력가능
+			allowPoint : true, // 소수점( . ) 도 허용할지 여부
+			allowNegative : true, // 마이너스 부호(-) 허용 여부
+			textAlign : "right", // 오른쪽 정렬로 입력되도록 설정
+			autoThousandSeparator : true // 천단위 구분자 삽입 여부
+		}
+	}];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	// 그리드 속성 설정
+	var gridPros = {
+		
+		selectionMode : "multipleCells",
+		
+		editable : true,
+	
+		// 상태 칼럼 사용
+		showStateColumn : true
+		
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, gridPros);
+	
+	// 에디팅 시작 이벤트 바인딩
+	// 에디팅 정상 종료 직전 이벤트 바인딩
+	// 에디팅 정상 종료 이벤트 바인딩
+	// 에디팅 취소 이벤트 바인딩
+	AUIGrid.bind(myGridID, ["cellEditBegin", "cellEditEnd", "cellEditCancel"], auiCellEditingHandler);
+};
+
+function auiCellEditingHandler(event) {
+	if(event.type == "cellEditBegin") {
+		document.getElementById("editBeginDesc").innerHTML = "에디팅 시작(cellEditBegin) : ( " + event.rowIndex + ", " + event.columnIndex + " ) " + event.headerText + ", value : " + event.value + ", which : " + event.which;
+	} else if(event.type == "cellEditEnd") {
+		document.getElementById("editBeginEnd").innerHTML = "에디팅 종료(cellEditEnd) : ( " + event.rowIndex + ", " + event.columnIndex + " ) " + event.headerText + ", value : " + event.value + ", which : " + event.which;
+	} else {
+		document.getElementById("editBeginEnd").innerHTML = "에디팅 취소(cellEditCancel) : ( " + event.rowIndex + ", " + event.columnIndex + " ) " + event.headerText + ", value : " + event.value + ", which : " + event.which;
+	}
+};
+
+// 그리드 데이터
+var gridData = [{"f1":"Korea","f2":"Blue","f3":"IPhone 5S","f4":3258731},{"f1":"USA","f2":"Gray","f3":"Galaxy S5","f4":4119848},{"f1":"UK","f2":"Green","f3":"IPad Air","f4":6224630},{"f1":"Japan","f2":"Orange","f3":"Galaxy Note3","f4":7942665},{"f1":"China","f2":"Pink","f3":"LG G3","f4":5181529},{"f1":"France","f2":"Violet","f3":"Nexus 10","f4":5106071},{"f1":"Italy","f2":"Yellow","f3":"IPhone 5S","f4":3891990},{"f1":"Singapore","f2":"Red","f3":"Galaxy S5","f4":3692250},{"f1":"Ireland","f2":"Blue","f3":"IPad Air","f4":7976759},{"f1":"Taiwan","f2":"Gray","f3":"Galaxy Note3","f4":8070724},{"f1":"Korea","f2":"Green","f3":"LG G3","f4":6408315},{"f1":"USA","f2":"Orange","f3":"Nexus 10","f4":8905405},{"f1":"UK","f2":"Pink","f3":"IPhone 5S","f4":6384926},{"f1":"Japan","f2":"Violet","f3":"Galaxy S5","f4":8802489},{"f1":"China","f2":"Yellow","f3":"IPad Air","f4":4048114},{"f1":"France","f2":"Red","f3":"Galaxy Note3","f4":2877805},{"f1":"Italy","f2":"Blue","f3":"LG G3","f4":5448276},{"f1":"Singapore","f2":"Gray","f3":"Nexus 10","f4":3157277},{"f1":"Ireland","f2":"Green","f3":"IPhone 5S","f4":3681850},{"f1":"Taiwan","f2":"Orange","f3":"Galaxy S5","f4":4199650}];
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>특별히 editRenderer 속성 값을 설정하지 않으면 출력되는 기본적인 편집 렌더러입니다. (InputEditRenderer)</p>
+		<p>기본(default) 편집 렌더러에 속성을 추가로 지정하고자 한다면 칼럼 레이아웃 설정 시 다음처럼 정의 하십시오.</p>
+<div class="src_cover"><pre>
+dataField : "f4",
+headerText : "숫자 입력",
+dataType : "numeric",
+width : 160,
+editRenderer : {
+	<strong>type : "InputEditRenderer",</strong>
+	showEditorBtnOver : true, // 마우스 오버 시 에디터버턴 보이기
+	onlyNumeric : true, // 0~9만 입력가능
+	allowPoint : true, // 소수점( . ) 도 허용할지 여부
+	allowNegative : true, // 마이너스 부호(-) 허용 여부
+	textAlign : "right", // 오른쪽 정렬로 입력되도록 설정
+	maxlength : 10, // 글자수 10으로 제한 (천단위 구분자 삽입(autoThousandSeparator=true)로 한 경우 구분자 포함해서 10자로 제한)
+	autoThousandSeparator : true // 천단위 구분자 삽입 여부
+}
+</pre></div>
+		<p>■ showEditorBtnOver 를 true 로 설정하면 마우스 오버 셀에 에디터 버턴이 따라 다닙니다.</p>
+		<p>◎ "오른쪽 정렬" 칼럼은 입력 글자 수를 제한하도록 설정한 모습입니다.(maxlength 지정)</p>
+		<p>◎ "숫자 입력" 칼럼은 숫자 입력만을 받도록 설정한 모습입니다.(onlyNumeric 지정, 소수점 허용 원하면 allowPoint 지정, 음수 허용 원한다면 allowNegative 지정)</p>
+		
+		<p><strong>마우스 더블 클릭 또는 F2 키를 눌러 편집 모드로 진입하면 텍스트 정렬된 인푸터를 확인 할 수 있습니다.</strong></p>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:280px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="editBeginDesc"></p>
+		<p id="editBeginEnd"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

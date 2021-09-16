@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<!-- 사용자가 작성한 렌더러 JS -->
+<script type="text/javascript" src="./js/renderers/AUIGrid.ChartRenderer.js"></script>
+
+<!-- 구글 차트 -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<style type="text/css">
+
+/* CustomRenderer 스타일....AUIGrid.MyClientRenderer.js 에서 사용할 사용자가 정의해야 할 스타일입니다.*/
+.aui-grid-renderer-custom .my-img {
+	position:absolute;
+	display: block;
+	left: 4px;
+	top: 4px;
+	width : auto;
+	height:42px;
+	overflow: hidden;
+}
+.aui-grid-renderer-custom .my-child1 {
+	position:absolute;
+	display: block;
+	left: 72px;
+	top: 2px;
+	overflow: hidden;
+}
+.aui-grid-renderer-custom .my-child2 {
+	position:absolute;
+	display : block;
+	top:22px;
+	left : 72px;
+	overflow:hidden;
+}
+/* CustomRenderer 스타일 끝*/
+
+.my-right-style {
+	text-align:right;
+}
+</style>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// 구글 차트 로드
+	google.charts.load('current', {'packages':['corechart']});
+	
+	// 구글 차트 로딩이 완료되면 그리드를 생성함.
+    google.charts.setOnLoadCallback(function() {
+    	// AUIGrid 그리드를 생성합니다.
+    	createAUIGrid(columnLayout);
+    	
+    	// AUIGrid 에 데이터 삽입합니다.
+    	AUIGrid.setGridData(myGridID, gridData);
+    });
+
+};
+
+// AUIGrid 칼럼 설정
+var columnLayout = [{
+	    dataField: "region",
+	    headerText: "지역",
+	    width: 120
+	}, {
+		dataField : "chartField", // 임의로 유니크하게 입력
+		headerText : "비율",
+		width:300,
+		sortable : false,
+		headerTooltip : {
+			show : true,
+			tooltipHtml : "사용자 정의 렌더러를 작성한 칼럼입니다."
+		},
+		renderer : {
+			type : "CustomRenderer",
+			jsClass : AUIGrid.ChartRenderer
+		}
+	}, {
+	    dataField: "q1",
+	    headerText: "Q1",
+		dataType : "numeric"
+	}, {
+	    dataField: "q2",
+	    headerText: "Q2",
+		dataType : "numeric"
+	}, {
+	    dataField: "q3",
+	    headerText: "Q3",
+		dataType : "numeric"
+	}, {
+	    dataField: "q4",
+	    headerText: "Q4",
+		dataType : "numeric"
+	}
+];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			
+		// 행 인덱스 칼럼 30 사이즈
+		rowNumColumnWidth : 30,
+
+		// 행 높이 102
+		// 구글 차트의 높이를 100으로 설정함. 
+		rowHeight : 102
+	};
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+}
+
+// 그리드 데이터
+var gridData = [{"region":"서울","q1":373264,"q2":325630,"q3":272396,"q4":427750},{"region":"경기인천","q1":390542,"q2":77663,"q3":231813,"q4":296600},{"region":"강원","q1":432291,"q2":22411,"q3":568332,"q4":65203},{"region":"충북","q1":710499,"q2":302877,"q3":236852,"q4":794240},{"region":"충남","q1":914093,"q2":967222,"q3":775029,"q4":81676},{"region":"대전","q1":734707,"q2":436940,"q3":215340,"q4":612949},{"region":"경북","q1":307353,"q2":300957,"q3":470717,"q4":736408},{"region":"대구","q1":145168,"q2":665827,"q3":390579,"q4":626354},{"region":"경남","q1":714837,"q2":55729,"q3":544365,"q4":89502},{"region":"부산","q1":660382,"q2":551184,"q3":251912,"q4":606440},{"region":"전북","q1":983151,"q2":615463,"q3":496435,"q4":860253},{"region":"전남","q1":262013,"q2":801265,"q3":83713,"q4":382659},{"region":"광주","q1":246670,"q2":678903,"q3":993655,"q4":505170},{"region":"제주","q1":487568,"q2":403859,"q3":807833,"q4":145756}];
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>"비율" 칼럼은 그리드에서 제공되는 칼럼 렌더러가 아닌 사용자(개발자)가 직접 출력하고자 하는 칼럼 렌더러를 작성하여 설정한 모습입니다.</p>
+		<p>구글 차트를 출력한 모습입니다.</p>
+		<p>사용자 렌더러는 다음과 같이 칼럼 렌더러에 "CustomRenderer" 를 type으로 지정하고, 실제 사용자가 작성한 js 파일을 jsClass 값으로 설정하십시오.</p>
+<div class="src_cover"><pre>
+headerText : "비율",
+width : 160,
+renderer : {
+	type : "CustomRenderer", // 사용자 정의 렌더러 사용
+	jsClass : AUIGrid.ChartRenderer // 작성한 사용자 정의 렌더러 JS
+}
+</pre></div>
+		<p>샘플로 제공되는 AUIGrid.ChartRenderer.js 파일을 참고하여 원하는 렌더러를 작성해 보십시오.</p>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:420px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+		
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

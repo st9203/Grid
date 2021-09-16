@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+<style type="text/css">
+
+/* 커스텀 칼럼 스타일 정의 */
+.my-column {
+	color:#D9418C;
+}
+
+.my-colum-right {
+	text-align:right;
+}
+</style>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// 데이터 요청, 요청 성공 시 AUIGrid 에 데이터 삽입합니다.
+	requestData("./data/normal_kor_500.json");
+};
+
+// AUIGrid 칼럼 설정
+// 데이터 형태는 다음과 같은 형태임,
+//[{"id":"#Cust0","date":"2014-09-03","name":"Han","country":"USA","product":"Apple","color":"Red","price":746400}, { .....} ];
+var columnLayout = [ {
+		dataField : "name",
+		headerText : "Name",
+		filter : {
+			showIcon : true,
+			useExMenu : true // 추가적인 확장 필터 메뉴- 텍스트 필터 사용
+		},
+		width : 200
+	}, {
+		dataField : "country",
+		headerText : "Country",
+		filter : {
+			showIcon : true,
+			useExMenu : true // 추가적인 확장 필터 메뉴- 텍스트 필터 사용
+		},
+		width : 200
+	}, {
+		dataField : "product",
+		headerText : "Product",
+		filter : {
+			showIcon : true,
+			useExMenu : true // 추가적인 확장 필터 메뉴- 텍스트 필터 사용
+		},
+		width: 200
+	}, {
+		dataField : "quantity",
+		headerText : "Quantity",
+		dataType : "numeric",
+		headerStyle : "my-column",
+		filter : {
+			showIcon : true,
+			useExMenu : true // 추가적인 확장 필터 메뉴- 숫자 필터 사용
+		},
+		width: 120
+	}, {
+		dataField : "price",
+		headerText : "Price",
+		dataType : "numeric",
+		headerStyle : "my-column",
+		style : "my-colum-right",
+		filter : {
+			showIcon : true,
+			useExMenu : true // 추가적인 확장 필터 메뉴- 숫자 필터 사용
+		},
+		width: 140
+	}
+];
+
+// 푸터 설정
+var footerLayout = [ {
+	labelText : "∑",
+	positionField : "#base"
+}, {
+	dataField : "price",
+	positionField : "price",
+	formatString : "#,##0",
+	operation : "SUM",
+	style : "my-colum-right"
+}, {
+	dataField : "price",
+	positionField : "date",
+	formatString : "#,##0",
+	operation : "COUNT",
+	style : "my-colum-right"
+}];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			
+		selectionMode : "multipleCells",
+		
+		showRowNumColumn : true,
+		
+		showRowCheckColumn : false,
+		
+		editable : true,
+		
+		useContextMenu : true,
+		
+		softRemoveRowMode : false,
+		
+		enableMovingColumn : false,
+		
+		enableFilter : true,
+		
+		showFooter : true,
+		
+		// 필터 레이어 기본 가로, 세로 지정(기본값 : 각각 260, 320)
+		filterLayerWidth : 280,
+		filterLayerHeight : 340
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+	
+	// 푸터 레이아웃 세팅
+	AUIGrid.setFooter(myGridID, footerLayout);
+	
+	// 필터링 이벤트 바인딩
+	AUIGrid.bind(myGridID, "filtering", function(evt) {
+		var filterInfo = evt.filterCache;
+		var str = "filtering Event Info<br/>";
+		var length = 0;
+		for(var n in filterInfo) {
+			length++;
+			str += n + " : " + JSON.stringify(filterInfo[n]) + "<br/>";
+		}
+		if(length <= 0)
+			str = "필터링 되지 않음";
+		
+		document.getElementById("ellapse").innerHTML = str;
+	});
+}
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>그리드의 필터 메뉴를 사용할 때 확장 필터 메뉴를 설정한 예제입니다.</p>
+		<p>확장 필터 메뉴는 다음처럼 간단하게 칼럼레이아웃에서 useExMenu : true 로 설정함으로써 사용 가능합니다.</p>
+<div class="src_cover"><pre>
+var columnLayout = [ {
+	dataField : "name",
+	headerText : "Name",
+	filter : {
+		showIcon : true,
+		<strong>useExMenu : true // 추가적인 확장 필터 메뉴 사용</strong>
+	},
+	...
+</pre></div>		
+		<p>확장 필터 메뉴는 다음 2가지가 존재합니다.</p>
+		<p>* 텍스트 필터 : dataType 을 지정하지 않은 경우(또는 기본값인 "string" 을 지정한 경우)</p>
+		<p>* 숫자 필터 : dataType 을 "numeric"으로 지정한 경우</p>
+		<p>아래 그리드에서 Name, Country, Product 는 확장 필터 메뉴가 텍스트 필터로 출력되고, Quantity, Price 는 확장 필터 메뉴가 숫자 필터로 출력됩니다.</p>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:350px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+		
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="./style/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<style type="text/css">
+
+/* 커스텀 칼럼 스타일 정의 */
+.my-column {
+	text-align:right;
+}
+</style>
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// 데이터 요청, 요청 성공 시 AUIGrid 에 데이터 삽입합니다.
+	requestCsvData();
+
+};
+
+//AUIGrid 칼럼 설정
+//데이터 형태는 다음과 같은 형태임,
+//[{"id":"#Cust0","date":"2014-09-03","name":"Han","country":"USA","product":"Apple","color":"Red","price":746400}, { .....} ];
+var columnLayout = [ {
+		dataField : "0",
+		headerText : "ID",
+		width : 120
+	}, {
+		dataField : "1",
+		headerText : "Name",
+		width : 140
+	}, {
+		dataField : "2",
+		headerText : "Country",
+		width : 120
+	}, {
+		dataField : "3",
+		headerText : "Flag IMG",
+		editable : false,
+		prefix : "./assets/",
+		renderer : {
+			type : "ImageRenderer",
+			imgHeight : 24,
+			altField : "country"
+		},
+		width : 100
+	}, {
+		dataField : "4",
+		headerText : "Product",
+		width : 120
+	}, {
+		dataField : "5",
+		headerText : "Color",
+		width : 100
+	}, {
+		dataField : "6",
+		headerText : "Price",
+		dataType : "numeric",
+		style : "my-column",
+		width : 120,
+		editRenderer : {
+			type : "InputEditRenderer",
+			onlyNumeric : true, // 0~9만 입력가능
+			textAlign : "right", // 오른쪽 정렬로 입력되도록 설정
+			autoThousandSeparator : true // 천단위 구분자 삽입 여부
+		}
+	}, {
+		dataField : "7",
+		headerText : "Quantity",
+		dataType : "numeric",
+		style : "my-column",
+		width : 100,
+		editRenderer : {
+			type : "InputEditRenderer",
+			onlyNumeric : true, // 0~9만 입력가능
+			textAlign : "right", // 오른쪽 정렬로 입력되도록 설정
+			autoThousandSeparator : true // 천단위 구분자 삽입 여부
+		}
+	}, {
+		dataField : "8",
+		headerText : "Date"
+	}];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	// 그리드 속성 설정
+	var gridPros = {
+		
+			// 편집 가능 여부 (기본값 : false)
+			editable : true,
+			
+			// 엔터키가 다음 행이 아닌 다음 칼럼으로 이동할지 여부 (기본값 : false)
+			enterKeyColumnBase : true,
+			
+			// 셀 선택모드 (기본값: singleCell)
+			selectionMode : "multipleCells",
+			
+			// 컨텍스트 메뉴 사용 여부 (기본값 : false)
+			useContextMenu : true,
+			
+			// 필터 사용 여부 (기본값 : false)
+			enableFilter : true,
+		
+			// 그룹핑 패널 사용
+			useGroupingPanel : true,
+			
+			// 상태 칼럼 사용
+			showStateColumn : true,
+			
+			// 그룹핑 또는 트리로 만들었을 때 펼쳐지게 할지 여부 (기본값 : false)
+			displayTreeOpen : true,
+			
+			noDataMessage : "출력할 데이터가 없습니다.",
+			
+			groupingMessage : "여기에 칼럼을 드래그하면 그룹핑이 됩니다."
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, gridPros);
+}
+
+
+function requestCsvData() {
+
+	// 요청 URL
+	var url = "./data/data.csv.txt";
+	
+	// ajax 요청 전 그리드에 로더 표시
+	AUIGrid.showAjaxLoader(myGridID);
+	
+	// ajax (XMLHttpRequest) 로 그리드 데이터 요청
+	ajax( {
+		url : url,
+		onSuccess : function(data) {
+			
+			// 요청 데이터가 0개임
+			if(!data || data.length <= 1) {
+				// 그리드에 데이터 설정
+				AUIGrid.setGridData(myGridID, []);
+			} else {
+				// AUIGrid 에 CSV 형식의 스트링 데이터 삽입 (data는 컴마 구분의 문자열(String) 임)
+				// isSimpleMode = false : 컴마(,) 가 구분자 역할도 하지만 실제 값에 컴마(,)가 있는 데이터인 경우는 false 파라메터 추가
+				// 명확하게 컴마가 실제 값에 없는 경우는 다음처럼 false 파라메터 없이 사용하세요.
+				// CSV 데이터 파싱 속도에 차이가 있습니다. 빠르게 파싱합니다.
+				AUIGrid.setCsvGridData(myGridID, data, false);
+			}
+			
+			// 로더 제거
+			AUIGrid.removeAjaxLoader(myGridID);
+		},
+		onError : function(status, e) {
+			alert("데이터 요청에 실패하였습니다.\r status : " + status);
+			// 로더 제거
+			AUIGrid.removeAjaxLoader(myGridID);
+		}
+	});
+};
+
+</script>
+
+</head>
+<body>
+<div id="main">
+	<div class="desc">
+		<p>CSV 데이터로 기본적인 화면을 구성한 데모입니다. <span class="btn" onclick="javascript:window.open('./data/data.csv.txt', '_blank', 'width=1024 height=768 scrollbars=yes')">
+		CSV 데이터 구조 보기</span></p>
+		<p>마우스로 그리드 헤더를 드래그&amp;드랍 하면 그룹핑이 됩니다. (그룹핑 상태에서 정렬(sorting) 지원)</p>
+		<p>CSV 데이터는 다음과 같이 setCsvGridData 로 그리드에 데이터를 삽입합니다.</p>
+<div class="src_cover"><pre>
+// AUIGrid 에 CSV 형식의 스트링 데이터 삽입 (data는 컴마 구분의 문자열(String) 임)
+// 명확하게 컴마가 실제 값에 없는 경우는 다음처럼 false 파라메터 없이 사용하세요.
+// CSV 데이터 파싱 속도에 차이가 있습니다. 빠르게 파싱합니다.
+AUIGrid.setCsvGridData("#grid_wrap", data);
+</pre></div>
+<div class="src_cover"><pre>
+// AUIGrid 에 CSV 형식의 스트링 데이터 삽입 (data는 컴마 구분의 문자열(String) 임)
+// isSimpleMode = false : 컴마(,) 가 구분자 역할도 하지만 실제 값에 컴마(,)가 있는 데이터인 경우는 false 파라메터 추가
+AUIGrid.setCsvGridData("#grid_wrap", data, false);
+</pre></div>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:480px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+		
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright © 2014-2019 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+<style type="text/css">
+
+.my-right {
+	text-align:right;
+}
+
+</style>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// 데이터 요청, 요청 성공 시 AUIGrid 에 데이터 삽입합니다.
+	requestData("./data/normal_500.json");
+};
+
+// AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "name",
+		headerText : "Name"
+	}, {
+		dataField : "country",
+		headerText : "Country"
+	}, {
+		dataField : "product",
+		headerText : "Product"
+	}, {
+		dataField : "quantity",
+		headerText : "Quantity",
+		dataType : "numeric",
+		style : "my-right"
+	}, {
+		dataField : "price",
+		headerText : "Price",
+		dataType : "numeric",
+		style : "my-right"
+	}, {
+		dataField : "date",
+		headerText : "Date"
+	}
+];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			
+			editable : true,
+			
+			selectionMode : "singleCell",
+			
+			// 행 고유 id 에 속하는 필드명 (필드의 값은 중복되지 않은 고유값이여야 함)
+			rowIdField : "id",
+			
+			// 새 행 제거 제외 정책 사용
+			softRemovePolicy : "exceptNew",
+			
+			// 상태 칼럼 사용
+			showStateColumn : true,
+			
+			// 칼럼 끝에서 오른쪽 이동 시 다음 행, 처음 칼럼으로 이동할지 여부
+			wrapSelectionMove : true,
+			
+			// 엔터키가 다음 행이 아닌 다음 칼럼으로 이동할지 여부 (기본값 : false)
+			enterKeyColumnBase : true
+	};
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+	
+	// ready 이벤트 바인딩
+	AUIGrid.bind(myGridID, "ready", function(event) {
+		// 강제로 수정, 삭제, 행 추가 시키기
+		forceEditing();
+	});
+	
+};
+
+
+function forceEditing() {
+	// 강제로 5개 행 수정한 걸로 간주하기 위해 updateRow 실행
+	var items2editing = [];
+	for(var i=0, len=5; i<len; i++) {
+		items2editing[i] = {
+				id : "#Cust" +i,
+				name : "Name 강제 수정" + i,
+				country : "Country 강제 수정" + i,
+				product : "PRD 강제 수정" + i,
+				price : Math.floor(Math.random() * 100000)
+		};
+		if(i%2==0)  items2editing[i]["quantity"] = Math.floor(Math.random() * 10);
+	}
+	
+	// 수정 취소를 보여주기 위해 강제로 수정 만듬.
+	AUIGrid.updateRowsById(myGridID, items2editing);
+	
+	// 행인덱스 5,6,7 삭제 하기
+	AUIGrid.removeRow(myGridID, [5, 6, 7]);
+	
+	// 8번째 인덱스에 행 2개 추가하기	
+	AUIGrid.addRow(myGridID, [{ name : "New Name", country : "New Country", product : "New Product"},
+	                          { name : "New Name", country : "New Country", product : "New Product"}], 8);
+	
+	// 0, 0에 포커싱
+	AUIGrid.setSelectionByIndex(myGridID, 0, 0);
+};
+
+function btnClickEdited() {
+	// 1행의 행 아이템 얻기( 1행이 기때문에 index 는 0임)
+	var item = AUIGrid.getItemByRowIndex(myGridID, 0);
+	var rowIdField = AUIGrid.getProp(myGridID, "rowIdField");
+	var rowId = item[rowIdField]; // rowId 값 얻기
+	
+	// rowId : 행의 rowId 값
+	// e : 수정된 행을 수정되지 않은 상태로 초기화 
+	AUIGrid.resetUpdatedItemById(myGridID, rowId, "e");
+};
+
+function btnClickDeleted() {
+	// 6행의 행 아이템 얻기( 6행이 기때문에 index 는 5임)
+	var item = AUIGrid.getItemByRowIndex(myGridID, 5);
+	var rowIdField = AUIGrid.getProp(myGridID, "rowIdField");
+	var rowId = item[rowIdField]; // rowId 값 얻기
+	
+	// rowId : 행의 rowId 값
+	// d : 삭제된 행을 삭제되지 않은 상태로 초기화 
+	AUIGrid.resetUpdatedItemById(myGridID, rowId, "d");
+};
+
+function btnClickCreated() {
+	// 9행의 행 아이템 얻기( 6행이 기때문에 index 는 8임)
+	var item = AUIGrid.getItemByRowIndex(myGridID, 8);
+	var rowIdField = AUIGrid.getProp(myGridID, "rowIdField");
+	var rowId = item[rowIdField]; // rowId 값 얻기
+	
+	// rowId : 행의 rowId 값
+	// c : 추가된 행을 추가되지 않은 상태로 초기화 
+	AUIGrid.resetUpdatedItemById(myGridID, rowId, "c");
+};
+
+function btnClickAll() {
+	var selectedItems = AUIGrid.getSelectedItems(myGridID);
+	
+	if(selectedItems.length <= 0) {
+		alert("선택 셀이 없습니다.");
+		return;
+	}
+	
+	var firstRow = selectedItems[0];
+	var rowId = firstRow.rowIdValue;
+	
+	// rowId : 행의 rowId 값
+	// a : 추가, 수정, 삭제 모두 원래 상태로 초기화 
+	AUIGrid.resetUpdatedItemById(myGridID, rowId, "a");
+};
+
+//추가, 수정, 삭제 된 아이템들 확인하기
+function checkItems() {
+	
+	// 추가된 행 아이템들(배열)
+	var addedRowItems = AUIGrid.getAddedRowItems(myGridID);
+	 
+	// 수정된 행 아이템들(배열) : 진짜 수정된 필드만 얻음.
+	var editedRowItems = AUIGrid.getEditedRowItems(myGridID);
+	
+	// 삭제된 행 아이템들(배열)
+	var removedRowItems = AUIGrid.getRemovedItems(myGridID);
+	
+	var i, len, name, rowItem;
+	var str = "";
+	
+	if(addedRowItems.length > 0) {
+		str += "---추가된 행\r\n";
+		for(i=0, len=addedRowItems.length; i<len; i++) {
+			rowItem = addedRowItems[i]; // 행아이템
+			str += rowItem.name;	
+			str += "\r\n";
+		}
+	}
+	
+	if(editedRowItems.length > 0) {
+		str += "---수정된 행\r\n";
+		for(i=0, len=editedRowItems.length; i<len; i++) {
+			rowItem = editedRowItems[i]; // 행아이템
+			str += rowItem.name;	
+			str += "\r\n";
+		}
+	}
+	
+	if(removedRowItems.length > 0) {
+		str += "---삭제된 행\r\n";
+		for(i=0, len=removedRowItems.length; i<len; i++) {
+			rowItem = removedRowItems[i]; // 행아이템
+			str += rowItem.name;
+			str += "\r\n";
+		}
+	}
+	
+	if(str == "")
+		str = "변경 사항 없음";
+	
+	alert(str);
+}
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>최초 그리드에 데이터를 삽입하고, 사용자가 행을 삭제, 수정, 추가의 행위를 했다고 간주한 모습입니다.</p>
+		<p>이런 경우 행 상태만 초기화 할 수 있습니다.</p>
+		<p>예로 1~5행은 수정된 행이고, 6~8행은 삭제된 행 그리고 9~10행은 추가된 행입니다.</p>
+		<p>해당 데이터는 그대로 유지하고 상태만 초기화 합니다.</p>
+		<p><strong>즉, 마치 원래 데이터가 그랬던 것처럼 간주시킵니다. </strong></p>
+		<div>
+			<span class="btn" onclick="btnClickEdited()">1행 수정 상태 초기화</span>
+			<span class="btn" onclick="btnClickDeleted()">6행 삭제 상태 초기화</span>
+			<span class="btn" onclick="btnClickCreated()">9행 추가 상태 초기화</span>
+			<span class="btn" onclick="btnClickAll()">선택 행 상태 초기화(선택 행 수정, 삭제, 추가 상태 모두 초기화)</span>
+		</div>
+		<div>
+			<span class="btn" onclick="checkItems()">추가, 수정, 삭제된 행 얻기</span>
+		</div>
+	</div>
+	
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:420px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

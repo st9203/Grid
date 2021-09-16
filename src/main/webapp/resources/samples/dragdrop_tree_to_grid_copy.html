@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<script type="text/javascript">
+
+// 상단 그리드 생성 후 반환 ID
+var myGridID;
+
+// 하단 그리드 생성 후 반환ID
+var myGridID2;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// 상단 그리드를 생성합니다.
+	createAUIGrid();
+	
+	// 하단 그리드를 생성합니다.
+	createDetailAUIGrid();
+	
+	// 데이터 요청, 요청 성공 시 AUIGrid 에 데이터 삽입합니다.
+	requestData("./data/schedule_tree.json");
+};
+
+// Master 그리드 를 생성합니다.
+function createAUIGrid() {
+	
+	// AUIGrid 칼럼 설정
+	var columnLayout = [ {
+			dataField : "id",
+			headerText : "ID",
+			width: 80
+	}, {
+		    dataField: "name",
+		    headerText: "Task Name",
+			width:400
+	}, {
+			dataField : "charge",
+			headerText : "Charge",
+			width:140
+	}, {
+			dataField: "complete",
+			headerText: "Complete(%)",
+			postfix : "%",
+			width : 120
+	}, {
+			dataField: "start",
+			headerText: "Start Date"
+	}, {
+			dataField: "end",
+			headerText: "End Date"
+	}];
+
+	
+	// 그리드 속성 설정
+	var gridPros = {
+			selectionMode : "singleRow",
+			// 그리드 데이터와 무관하게 무조건적인 트리 그리드로 출력.
+			forceTreeView : true,
+			// 일반 데이터를 트리로 표현할지 여부
+			treeColumnIndex : 1,
+			// 드래깅 행 이동 가능 여부 (기본값 : false)
+			enableDrag : true,
+			// 셀에서 바로  드래깅 해 이동 가능 여부 (기본값 : false) - enableDrag=true 설정이 선행 
+			enableDragByCellDrag : true,
+			// 드랍 가능 여부 (기본값 : true)
+			// false 설정했다는 의미는 이 그리드는 드래깅만 가능하고, 드랍은 절대 받지 않는다는 뜻임.
+			enableDrop : false,
+			// 드랍을 받아줄 그리드가 다른 그리드에도 있는지 여부 (기본값 : false)
+			// 즉, 드리드 간의 행 이동인지 여부
+			dropToOthers : true
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, gridPros);
+	
+	// 드랍 종료 전 이벤트 바인딩 - 여기서 행 이동, 복사를 결정합니다.
+	AUIGrid.bind(myGridID, "dropEndBefore", function(event) {
+		if(event.items.length == 0) return false;
+		
+		// 이벤트의 isMoveMode 속성을 false 설정하면 행 복사를 합니다.
+		event.isMoveMode = false;
+		
+		// 드랍되는 그리드의 PID
+		var pidToDrop = event.pidToDrop;
+		var item = event.items[0]; // 드래깅 되고 있는 첫번째 행
+		var notHave = AUIGrid.isUniqueValue(pidToDrop, "id", item.id); // 이미 존재하는지 검사
+		if(!notHave) {
+			if(confirm("지금 드랍되는 행은 이미 이전에 드랍된 행입니다. 또 드랍하시겠습니까?")) {
+				return true;
+			} else {
+				return false; // 기본 행위 안함.
+			}
+		}
+		return true; // 만약 return false 를 하게 되면 드랍 행위를 하지 않습니다.(즉, 기본 행위를 안함)
+	});
+}
+
+// 하단 그리드 생성
+function createDetailAUIGrid() {
+	
+	// AUIGrid 칼럼 설정
+	var columnLayout = [ {
+			dataField : "id",
+			headerText : "ID",
+			width: 80
+	}, {
+		    dataField: "name",
+		    headerText: "Task Name",
+			width:400
+	}, {
+			dataField : "charge",
+			headerText : "Charge",
+			width:140
+	}, {
+			dataField: "complete",
+			headerText: "Complete(%)",
+			postfix : "%",
+			width : 120
+	}, {
+			dataField: "start",
+			headerText: "Start Date"
+	}, {
+			dataField: "end",
+			headerText: "End Date"
+	}];
+	
+	// 그리드 속성 설정
+	var gridPros = {
+			selectionMode : "singleRow",
+			// 그리드 데이터와 무관하게 무조건적인 트리 그리드로 출력.
+			forceTreeView : true,
+			// 일반 데이터를 트리로 표현할지 여부
+			treeColumnIndex : 1,
+			// 드래깅 행 이동 가능 여부 (기본값 : false)
+			enableDrag : true,
+			// 셀에서 바로  드래깅 해 이동 가능 여부 (기본값 : false) - enableDrag=true 설정이 선행 
+			enableDragByCellDrag : true,
+			// 드랍 가능 여부 (기본값 : true)
+			enableDrop : true,
+			// 드랍을 받아줄 그리드가 다른 그리드에도 있는지 여부 (기본값 : false)
+			// 즉, 드리드 간의 행 이동인지 여부
+			dropToOthers : true
+	};
+
+	// 실제로 #grid_wrap2 에 그리드 생성
+	myGridID2 = AUIGrid.create("#grid_wrap2", columnLayout, gridPros);
+	
+	// 최초 빈 배열로 초기화
+	AUIGrid.setGridData(myGridID2, []);
+};
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>2 개의 트리 그리드 간의 드래그&amp;드랍으로 행 복사(copy)를 정의한 모습입니다.</p>
+		 <p>상단 그리드에서 하단 그리드로 드래그&드랍을 행 복사(copy) 정의한 모습입니다.</p>
+	</div>
+	<div>
+		<!-- 상단 Grid -->
+		<div id="grid_wrap" style="width:1200px; height:280px; margin:0 auto;"></div>
+		
+		<div style="width:100%; height:20px;"></div>
+		
+		<!-- 하단 Grid -->
+		<div id="grid_wrap2" style="width:1200px; height:280px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

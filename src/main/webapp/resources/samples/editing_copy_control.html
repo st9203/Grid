@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+<style type="text/css">
+.bg-red-style {
+	background:#FFD8D8
+}
+</style>
+<script type="text/javascript">
+
+var logCache = [];
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid();
+	
+	// AUIGrid 에 데이터 삽입합니다.
+	createRandomData(20);
+
+};
+
+var chars = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+// AUIGrid 를 생성합니다.
+function createAUIGrid() {
+	
+	var columnLayout = [];
+	var column;
+	columnLayout[0] = {
+			headerText : "A",
+			dataField : "0",
+			dataType : "numeric",
+			formatString : "#,##0",
+			postfix : "원"
+	};
+	
+	for(var i=1; i<26; i++) {
+		columnLayout.push( {
+			headerText : chars[i],
+			dataField : i,
+			width:80
+		});
+	}
+	
+	var auiGridProps = {
+			editable : true, // 수정 모드
+			selectionMode : "multipleCells", // 다중셀 선택
+			showStateColumn : true,
+			softRemoveRowMode : false,
+			wrapSelectionMove : true, // 칼럼 끝에서 오른쪽 이동 시 다음 행, 처음 칼럼으로 이동할지 여부
+			copySingleCellOnRowMode : false // selectionMode 가 singleRow 또는 multipleRows 일 때, Copy + Paste 가 단일 셀에만 적용 여부(기본값:false)
+	};
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+	
+	
+	// 복사 시작 이벤트 바인딩
+	AUIGrid.bind(myGridID, "copyBegin", function(event) {
+		console.log(event);
+		var data = event.data; // 복사될 데이터
+		var rows = data.split("\r\n"); // 캐리지리턴으로 행 구분
+		
+		console.log(rows);
+		// 클립보드에 복사하는 값은 2행으로 구성된 1행-"a,b,c" 2행-"1,2,3" 임
+		// 클립보드는 TSV 데이터로 작성합니다.
+		return "a\tb\tc\r\n1\t2\t3"; // 반환되는 값이 곧 클립보드로 복사됨.
+	});
+	
+	// 붙여 넣기 시작 이벤트 바인딩
+	AUIGrid.bind(myGridID, "pasteBegin", function(event) {
+		console.log(event);
+		
+		// return [[1]]; // 단일 셀에 1이라는 값 예시
+		
+		// 붙여넣는 데이터는 2중 배열의 행, 열 구분으로 작성됩니다.
+		return [[1, "a", "b"], [2, "a2", "b2"], [3, "a3", "b3"]]; // 반환되는 값을 붙여넣기 적용함.
+	});
+};
+
+// 주어진 개수만큼 랜덤 데이터 생성하여 그리드에 삽입
+function createRandomData(count) {
+	var data = [];
+	var row;
+	for(var i=1; i<=count; i++) {
+		row = {};
+		row[0] = Math.round(Math.random() * 10000);
+		for(var j=1; j<26; j++) {
+			row[j] = chars[j] + ", " + i;
+		}
+		data.push(row);
+	}
+	
+	// 데이터 삽입
+	AUIGrid.setGridData(myGridID, data);
+};
+
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>셀의 값을 복사(Ctrl+C) 한 경우 기본적으로 셀 값이 클립보드에 복사됩니다.</p>
+		<p>복사되는 값을 변경하거나 제약시키고자 하는 경우 copyBegin 이벤트에서 가능합니다.</p>
+		<p>붙여넣기 되는 값을 변경하거나 제약시키고자 하는 경우 pasteBegin 이벤트에서 가능합니다.</p>
+		<p>데모는 클립보드에 복사하는 값과 붙여 넣는 값을 다음처럼 변경한 모습입니다.</p>
+		<p>■ 복사하기 : 항상 2행의 a b c \n 1 2 3 이 복사됩니다. (그리드 셀에서 복사한 후 메모장(또는 엑셀)에 붙여넣기 해보세요)</p>
+		<p>■ 붙여넣기 : 항상 3행의 1 a b \n 2 a2 b2 \n 3 a3 b3 이 붙여넣기 됩니다. (메모장(또는 엑셀)에서 복사 한 후 그리드에 붙여넣기 해보세요))</p>
+
+<div class="src_cover"><pre>
+// 카피 시작 이벤트 바인딩
+AUIGrid.bind(myGridID, "copyBegin", function(event) {
+	// 클립보드에 복사하는 값은 2행으로 구성된 1행-"a,b,c" 2행-"1,2,3" 임
+	// 클립보드는 TSV 데이터로 작성합니다.
+	return "a\tb\tc\r\n1\t2\t3"; // 반환되는 값이 곧 클립보드로 복사됨.
+});
+	
+// 붙여 넣기 시작 이벤트 바인딩
+AUIGrid.bind(myGridID, "pasteBegin", function(event) {
+	// 붙여넣는 데이터는 2중 배열의 행, 열 구분으로 작성됩니다.
+	return [[1, "a", "b"], [2, "a2", "b2"], [3, "a3", "b3"]]; // 반환되는 값을 붙여넣기 적용함.
+});
+</pre></div>
+
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:340px; margin:0 auto;"></div>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

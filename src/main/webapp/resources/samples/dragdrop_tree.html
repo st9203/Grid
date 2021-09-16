@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// 데이터 요청, 요청 성공 시 AUIGrid 에 데이터 삽입합니다.
+	requestData("./data/schedule_tree.json");
+};
+
+//AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "id",
+		headerText : "ID",
+		width: 80
+}, {
+	    dataField: "name",
+	    headerText: "Task Name",
+		width:400
+}, {
+		dataField : "charge",
+		headerText : "Charge",
+		width:140
+}, {
+		dataField: "complete",
+		headerText: "Complete(%)",
+		postfix : "%",
+		width : 120
+}, {
+		dataField: "start",
+		headerText: "Start Date"
+}, {
+		dataField: "end",
+		headerText: "End Date"
+}];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			selectionMode : "singleRow",
+			rowIdField : "id",
+			treeColumnIndex : 1,
+			// 드래깅 행 이동 가능 여부 (기본값 : false)
+			enableDrag : true,
+			// 드랍 가능 여부 (기본값 : true)
+			enableDrop : true,
+			// 셀에서 바로  드래깅 해 이동 가능 여부 (기본값 : false) - enableDrag=true 설정이 선행 
+			enableDragByCellDrag : true,
+			editable : true
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+	
+	// 그리드 ready 이벤트 바인딩
+	AUIGrid.bind(myGridID, "ready", function(event) {
+		//-- id 가 T30, T50 인 행 열기
+		AUIGrid.expandItemByRowId(myGridID, ["T30", "T50"], true);
+	});
+	
+	// 드래깅 시작 이벤트 바인딩	
+	AUIGrid.bind(myGridID, "dragBegin", function(e) {
+		if(e.items.length == 0) return;
+		var item = e.items[0];
+		// 정보 출력
+		document.getElementById("ellapse_b").innerHTML = "드래깅 시작 : " + item.id + ", " + item.name
+	});
+	
+	// 드랍 종료 이벤트 바인딩
+	AUIGrid.bind(myGridID, "dropEnd", function(e) {
+		// 정보 출력
+		var direction = e.direction == true ? "위에서 아래로" : "아래에서 위로";
+		var msg = "드랍 완료 : " + e.fromRowIndex + "→" + e.toRowIndex + " 에 " + " 드랍 됨(진행 방향 : " + direction + ")";
+		document.getElementById("ellapse_e").innerHTML = msg; 
+	});
+};
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>트리 그리드(계층형 그리드)에서 드래그&amp드랍으로 행 이동을 보여주는 데모입니다.</p>
+		<p>트리 그리드의 드래그&드랍도 일반 그리드와 동일하게 그리드 속성 enableDrag을 true 로 설정함으로써 사용 가능합니다.(행 이동 인터페이스 일반 그리드와 동일)</p>
+		<p>제약 사항으로 트리 그리드에서 드래그&amp드랍으로 행 이동은 단일 행만 가능합니다.</p>
+		<p>일반 그리드에서는 enableDragByCellDrag = true 설정 후 여러 행을 선택해서 드래깅 가능하였지만, 트리 그리드는 행 고유의 계층이 독립적이여야 하므로 단일 드래깅만 가능합니다.</p>
+		<p>편집 가능(editable=true)인 경우 Undo(Ctrl+Z), Redo(Ctrl+Y) 를 지원합니다.</p>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:480px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse_b"></p>
+		<p id="ellapse_e"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

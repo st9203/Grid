@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+};
+
+// AUIGrid 칼럼 설정
+var columnLayout = [{
+	dataField: "field0",
+    headerText: "일요일(기본값)",
+	dataType : "date",
+	dateInputFormat : "yyyy/mm/dd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "CalendarRenderer",
+		defaultFormat : "yyyy/mm/dd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		firstDay : 0, // 요일 시작 날짜 지정 (일요일인 경우 0, 월요일인 경우 1 등)
+		showEditorBtnOver : false, // 마우스 오버 시 에디터버턴 출력 여부
+		onlyCalendar : true, // 사용자 입력 불가, 즉 달력으로만 날짜입력 (기본값 : true)
+		showExtraDays : true // 지난 달, 다음 달 여분의 날짜(days) 출력
+	}
+}, {
+	dataField: "field1",
+    headerText: "월요일",
+	dataType : "date",
+	dateInputFormat : "yyyy/mm/dd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "CalendarRenderer",
+		defaultFormat : "yyyy/mm/dd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		firstDay : 1, // 요일 시작 날짜 지정 (일요일인 경우 0, 월요일인 경우 1 등)
+		showEditorBtnOver : false, // 마우스 오버 시 에디터버턴 출력 여부
+		onlyCalendar : true, // 사용자 입력 불가, 즉 달력으로만 날짜입력 (기본값 : true)
+		showExtraDays : true // 지난 달, 다음 달 여분의 날짜(days) 출력
+	}
+}, {
+	dataField: "field2",
+    headerText: "화요일",
+	dataType : "date",
+	dateInputFormat : "yyyy/mm/dd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "CalendarRenderer",
+		defaultFormat : "yyyy/mm/dd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		firstDay : 2, // 요일 시작 날짜 지정 (일요일인 경우 0, 월요일인 경우 1 등)
+		showEditorBtnOver : false, // 마우스 오버 시 에디터버턴 출력 여부
+		onlyCalendar : true, // 사용자 입력 불가, 즉 달력으로만 날짜입력 (기본값 : true)
+		showExtraDays : true // 지난 달, 다음 달 여분의 날짜(days) 출력
+	}
+}, {
+	dataField: "field3",
+    headerText: "수요일",
+	dataType : "date",
+	dateInputFormat : "yyyy/mm/dd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "CalendarRenderer",
+		defaultFormat : "yyyy/mm/dd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		firstDay : 3, // 요일 시작 날짜 지정 (일요일인 경우 0, 월요일인 경우 1 등)
+		showEditorBtnOver : false, // 마우스 오버 시 에디터버턴 출력 여부
+		onlyCalendar : true, // 사용자 입력 불가, 즉 달력으로만 날짜입력 (기본값 : true)
+		showExtraDays : true // 지난 달, 다음 달 여분의 날짜(days) 출력
+	}
+}, {
+	dataField: "field4",
+    headerText: "목요일",
+	dataType : "date",
+	dateInputFormat : "yyyy/mm", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "CalendarRenderer",
+		defaultFormat : "yyyy/mm/dd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		firstDay : 4, // 요일 시작 날짜 지정 (일요일인 경우 0, 월요일인 경우 1 등)
+		showEditorBtnOver : false, // 마우스 오버 시 에디터버턴 출력 여부
+		onlyCalendar : true, // 사용자 입력 불가, 즉 달력으로만 날짜입력 (기본값 : true)
+		showExtraDays : true // 지난 달, 다음 달 여분의 날짜(days) 출력
+	}
+}, {
+	dataField: "field5",
+    headerText: "금요일",
+	dataType : "date",
+	dateInputFormat : "yyyy/mm/dd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "CalendarRenderer",
+		defaultFormat : "yyyy/mm/dd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		firstDay : 5, // 요일 시작 날짜 지정 (일요일인 경우 0, 월요일인 경우 1 등)
+		showEditorBtnOver : false, // 마우스 오버 시 에디터버턴 출력 여부
+		onlyCalendar : true, // 사용자 입력 불가, 즉 달력으로만 날짜입력 (기본값 : true)
+		showExtraDays : true // 지난 달, 다음 달 여분의 날짜(days) 출력
+	}
+}];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			showRowCheckColumn : false,
+			showRowNumColumn : false,
+			editable : true
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+		
+	// 그리드 데이터 삽입.
+	AUIGrid.setGridData(myGridID, gridData);
+}
+
+
+// 그리드 데이터
+var gridData = [{"field0":"2019/12/22","field1":"2019/12/22","field2":"2019/12/22","field3":"2019/12/22","field4":"2019/12","field5":"2019/12/22"},{"field0":"2019/12/12","field1":"2019/12/12","field2":"2019/12/12","field3":"2019/12/12","field4":"2019/12","field5":"2019/12/12"},{"field0":"2019/12/02","field1":"2019/12/02","field2":"2019/12/02","field3":"2019/12/02","field4":"2019/12","field5":"2019/12/02"},{"field0":"2019/11/22","field1":"2019/11/22","field2":"2019/11/22","field3":"2019/11/22","field4":"2019/11","field5":"2019/11/22"},{"field0":"2019/11/12","field1":"2019/11/12","field2":"2019/11/12","field3":"2019/11/12","field4":"2019/11","field5":"2019/11/12"},{"field0":"2019/11/02","field1":"2019/11/02","field2":"2019/11/02","field3":"2019/11/02","field4":"2019/11","field5":"2019/11/02"},{"field0":"2019/10/23","field1":"2019/10/23","field2":"2019/10/23","field3":"2019/10/23","field4":"2019/10","field5":"2019/10/23"},{"field0":"2019/10/13","field1":"2019/10/13","field2":"2019/10/13","field3":"2019/10/13","field4":"2019/10","field5":"2019/10/13"},{"field0":"2019/10/03","field1":"2019/10/03","field2":"2019/10/03","field3":"2019/10/03","field4":"2019/10","field5":"2019/10/03"},{"field0":"2019/09/23","field1":"2019/09/23","field2":"2019/09/23","field3":"2019/09/23","field4":"2019/09","field5":"2019/09/23"},{"field0":"2019/09/13","field1":"2019/09/13","field2":"2019/09/13","field3":"2019/09/13","field4":"2019/09","field5":"2019/09/13"},{"field0":"2019/09/03","field1":"2019/09/03","field2":"2019/09/03","field3":"2019/09/03","field4":"2019/09","field5":"2019/09/03"},{"field0":"2019/08/24","field1":"2019/08/24","field2":"2019/08/24","field3":"2019/08/24","field4":"2019/08","field5":"2019/08/24"},{"field0":"2019/08/14","field1":"2019/08/14","field2":"2019/08/14","field3":"2019/08/14","field4":"2019/08","field5":"2019/08/14"},{"field0":"2019/08/04","field1":"2019/08/04","field2":"2019/08/04","field3":"2019/08/04","field4":"2019/08","field5":"2019/08/04"},{"field0":"2019/07/25","field1":"2019/07/25","field2":"2019/07/25","field3":"2019/07/25","field4":"2019/07","field5":"2019/07/25"},{"field0":"2019/07/15","field1":"2019/07/15","field2":"2019/07/15","field3":"2019/07/15","field4":"2019/07","field5":"2019/07/15"},{"field0":"2019/07/05","field1":"2019/07/05","field2":"2019/07/05","field3":"2019/07/05","field4":"2019/07","field5":"2019/07/05"},{"field0":"2019/06/25","field1":"2019/06/25","field2":"2019/06/25","field3":"2019/06/25","field4":"2019/06","field5":"2019/06/25"},{"field0":"2019/06/15","field1":"2019/06/15","field2":"2019/06/15","field3":"2019/06/15","field4":"2019/06","field5":"2019/06/15"},{"field0":"-","field1":"-","field2":"-","field3":"현재 작업 재개 중"}];
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>달력의 시작 날짜를 "월요일" 이나 특정 요일부터 시작하도록 설정한 모습입니다.("일요일"부터 시작이 기본값입니다.)</p>
+		
+		<div class="src_cover">
+<pre>
+dataField: "field1",
+headerText: "월요일",
+dataType : "date",
+dateInputFormat : "yyyy/mm/dd", // 실제 데이터의 형식 지정
+formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+editRenderer : {
+	type : "CalendarRenderer",
+	defaultFormat : "yyyy/mm/dd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+	<strong>firstDay : 1, // 요일 시작 날짜 지정 (일요일인 경우 0, 월요일인 경우 1, 화요일인 경우 2 등)</strong>
+</pre>
+		</div>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:480px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="editBeginDesc"></p>
+		<p id="editBeginEnd"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

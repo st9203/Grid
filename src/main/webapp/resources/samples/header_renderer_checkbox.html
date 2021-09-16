@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<style type="text/css">
+/* 특정 칼럼(데모의 price)의 체크박스 크기 설정 */
+/* 확인할려면 칼럼레이아웃에 정의된 my-check-column 의 주석 제거 */
+.my-check-column .aui-checkbox {
+	width:20px !important;
+	height:20px !important;
+}
+</style>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// AUIGrid 에 데이터 삽입합니다.
+	AUIGrid.setGridData(myGridID, gridData);
+};
+
+
+//AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "col1",
+		headerText : "Bottom(기본값)",
+		dataType : "boolean",
+		width : 180,
+		headerRenderer : { // 헤더 렌더러
+			type : "CheckBoxHeaderRenderer",
+			position : "bottom", // 기본값 bottom
+			checked : true, // 최초 체크 여부
+			onClick : myHeaderCheckClick // 클릭 핸들러
+		}
+	}, {
+		dataField : "col2",
+		headerText : "Top",
+		dataType : "boolean",
+		width : 180,
+		headerRenderer : { // 헤더 렌더러
+			type : "CheckBoxHeaderRenderer",
+			position : "top", // headerText 기준 하단에 위치
+			onClick : myHeaderCheckClick // 클릭 핸들러
+		}
+	}, {
+		dataField : "col3",
+		headerText : "Left",
+		dataType : "boolean",
+		width : 180,
+		headerRenderer : { // 헤더 렌더러
+			type : "CheckBoxHeaderRenderer",
+			position : "left", // headerText 기준 하단에 위치
+			checked : true, // 최초 체크 여부
+			onClick : myHeaderCheckClick // 클릭 핸들러
+		}
+	}, {
+		dataField : "col4",
+		headerText : "Right",
+		dataType : "boolean",
+		width : 180,
+		headerRenderer : { // 헤더 렌더러
+			type : "CheckBoxHeaderRenderer",
+			position : "right", // headerText 기준 하단에 위치
+			onClick : myHeaderCheckClick // 클릭 핸들러
+		}
+	}, {
+		dataField : "col5",
+		headerTooltip  : { 
+			show : true,
+		    tooltipHtml : "텍스트 표시 안함.</br>데이터의 체크박스에 의존적인 헤더 전체 체크박스를 구성함."
+		},
+		dataType : "boolean",
+		width : 180,
+		headerText : "", // 텍스트 표시 안하고 체크박스만 나오게 함.
+		//headerStyle : "my-check-column", // 여기 주석 제거하면 큰 체크박스가 보임. 상단의 style 확인바람.
+		headerRenderer : { // 헤더 렌더러
+			type : "CheckBoxHeaderRenderer",
+			// renderer 의 체크박스에 상호 의존적인 모드로 설정 (기본값 : false)
+			// dependentMode 는 renderer 의 type 으로 CheckBoxEditRenderer 를 정의할 때만 활성화됨.
+			dependentMode : true
+		},
+		renderer : {
+			type : "CheckBoxEditRenderer",
+			editable : true
+		}
+	}
+];
+
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			// 헤더 높이 지정
+			headerHeight : 40,
+			
+			editable : true,
+			
+			enableMovingColumn : true
+	};
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+};
+
+// 헤더렌더러 체크박스 클릭 핸들러
+function myHeaderCheckClick(event) {
+	alert("columnIndex : " + event.columnIndex + ", checked : " + event.checked);
+};
+
+// 그리드 데이터
+var gridData = [{"col1":false,"col2":true,"col3":true,"col4":true,"col5":false},{"col1":false,"col2":false,"col3":true,"col4":true,"col5":true},{"col1":true,"col2":true,"col3":false,"col4":false,"col5":false},{"col1":false,"col2":true,"col3":false,"col4":true,"col5":true},{"col1":true,"col2":true,"col3":false,"col4":true,"col5":true},{"col1":false,"col2":false,"col3":false,"col4":true,"col5":true},{"col1":true,"col2":false,"col3":false,"col4":false,"col5":true},{"col1":false,"col2":false,"col3":true,"col4":true,"col5":false},{"col1":true,"col2":true,"col3":false,"col4":false,"col5":false},{"col1":true,"col2":false,"col3":true,"col4":true,"col5":true},{"col1":true,"col2":true,"col3":false,"col4":true,"col5":true},{"col1":true,"col2":true,"col3":true,"col4":true,"col5":true},{"col1":false,"col2":true,"col3":true,"col4":true,"col5":true},{"col1":false,"col2":false,"col3":true,"col4":true,"col5":true},{"col1":false,"col2":true,"col3":true,"col4":false,"col5":false},{"col1":true,"col2":false,"col3":true,"col4":false,"col5":true},{"col1":false,"col2":false,"col3":false,"col4":true,"col5":false},{"col1":true,"col2":true,"col3":true,"col4":false,"col5":true},{"col1":false,"col2":true,"col3":false,"col4":false,"col5":false},{"col1":false,"col2":false,"col3":false,"col4":true,"col5":false}];
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>헤더에 체크박스 렌더러를 설정한 모습입니다.</p>
+		<p>기본적으로 헤더의 체크박스 렌더러는 독립적인 역할을 합니다. 즉, 변경 시 이벤트만 발생합니다.</p>
+		<p>그러나 다음처럼 dependentMode 를 true 로 설정하고 renderer 의 type 을 CheckBoxEditRenderer 로 설정하면 의존적으로 상호 작용을 합니다.</p>
+<div class="src_cover"><pre>
+dataField : "col5",
+headerText : "", // 텍스트 표시 안하고 체크박스만 나오게 함.
+headerRenderer : { // 헤더 렌더러
+	type : "CheckBoxHeaderRenderer",
+	// renderer 의 체크박스에 상호 의존적인 모드로 설정 (기본값 : false)
+	// dependentMode 는 renderer 의 type 으로 CheckBoxEditRenderer 를 정의할 때만 활성화됨.
+	dependentMode : true
+},
+renderer : {
+	type : "CheckBoxEditRenderer",
+	editable : true
+}
+</pre></div>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:320px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+		
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

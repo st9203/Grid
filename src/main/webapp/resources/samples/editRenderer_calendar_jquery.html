@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<!-- jQuery -->
+<script type="text/javascript"	src="http://code.jquery.com/jquery-1.10.2.js"></script>
+
+<!-- jQuery UI MIT 라이센스 -->
+<!-- 출처 : http://jqueryui.com -->
+<script type="text/javascript"	src="./external/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<link href="./external/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet">
+
+<script type="text/javascript">
+function documentReady() {};
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready
+$(document).ready(function() {
+
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+});
+
+// AUIGrid 칼럼 설정
+var columnLayout = [{
+	dataField: "field0",
+    headerText: "달력으로만 날짜 수정",
+	dataType : "date",
+	dateInputFormat : "yyyymmdd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	renderer : {
+		type : "IconRenderer",
+		iconWidth : 16, // icon 사이즈, 지정하지 않으면 rowHeight에 맞게 기본값 적용됨
+		iconHeight : 16,
+		iconPosition : "aisleRight",
+		iconTableRef :  { // icon 값 참조할 테이블 레퍼런스
+			"default" : "./assets/calendar-icon.png" // default
+		},
+		onClick : function(event) {
+			// 달력 아이콘 클릭하면 실제로 달력을 띄움.
+			// 즉, 수정으로 진입함.
+			AUIGrid.openInputer(event.pid);
+		}
+	},
+	editRenderer : {
+		type : "JQCalendarRenderer", // jquery-datepicker 달력 렌더러 사용
+		defaultFormat : "yyyymmdd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		uncheckDateValue : "-", // Clear 버턴 클릭 시 적용될 값.
+		showEditorBtn : false,
+		showEditorBtnOver : false,
+		// jquery-datepicker 속성을 여기에 설정하십시오.
+		// API : http://api.jqueryui.com/datepicker/#option-appendText
+		jqOpts : {
+			changeMonth: true,
+			changeYear: true,
+			selectOtherMonths : true,
+			showOtherMonths: true,
+			dayNamesMin: [ "일", "월", "화", "수", "목", "금", "토" ],
+			monthNamesShort: [ "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월" ]
+		} // end of jqOpts
+	}
+}, {
+	dataField: "field1",
+    headerText: "일반 달력 출력",
+	dataType : "date",
+	dateInputFormat : "yyyymmdd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "JQCalendarRenderer",
+		defaultFormat : "yyyymmdd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		onlyCalendar : false, // 사용자 입력 불가, 즉 달력으로만 날짜입력 (기본값 : true)
+		maxlength : 8, // 8자리 이하만 입력 가능
+		onlyNumeric : true, // 숫자
+		validator : function(oldValue, newValue, rowItem) { // 에디팅 유효성 검사
+			var isValid = true;
+			var y,m,d;
+			if(newValue.length < 8) {
+				isValid = false;
+			}
+			//y = newValue.substring(0,4);
+			m = newValue.substring(4,6);
+			d = newValue.substring(6,8);
+			// 월은 12월, 일은 31일을 넘지 않게.
+			if(parseInt(m) > 12 || parseInt(d) > 31) {
+				isValid = false;
+			}
+			// 리턴값은 Object 이며 validate 의 값이 true 라면 패스, false 라면 message 를 띄움
+			return { "validate" : isValid, "message"  : "8자리, 20180201 형식으로 입력해주세요." };
+		}
+	}
+}, {
+	dataField: "field2",
+    headerText: "선택 날짜 제한",
+    headerTooltip : {
+		show : true,
+		tooltipHtml : "오늘 부터 + 30일 까지만 선택 가능"
+	},
+	dataType : "date",
+	dateInputFormat : "yyyymmdd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "JQCalendarRenderer",
+		defaultFormat : "yyyymmdd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		showEditorBtnOver : true, // 마우스 오버 시 에디터버턴 출력 여부
+		uncheckDateValue : "-", // 날짜 선택 해제 버턴 클릭 시 적용될 값.
+		
+		// jquery-datepicker 속성을 여기에 설정하십시오.
+		// API : http://api.jqueryui.com/datepicker/#option-appendText
+		jqOpts : {
+			changeMonth: true,
+			changeYear: true,
+			selectOtherMonths : true,
+			showOtherMonths: true,
+			minDate: 0, 
+			maxDate: "+1M"
+		} // end of jqOpts
+	}
+}, {
+	dataField: "field3",
+    headerText: "다수의 달력 출력",
+	dataType : "date",
+	dateInputFormat : "yyyymmdd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "JQCalendarRenderer",
+		defaultFormat : "yyyymmdd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		showEditorBtnOver : true, // 마우스 오버 시 에디터버턴 출력 여부
+		uncheckDateValue : "현재 작업 재개 중", // Clear 버턴 클릭 시 적용될 값.
+		
+		// jquery-datepicker 속성을 여기에 설정하십시오.
+		// API : http://api.jqueryui.com/datepicker/#option-appendText
+		jqOpts : {
+			changeMonth: true,
+			changeYear: true,
+			selectOtherMonths : true,
+			showOtherMonths: true,
+			numberOfMonths: 3,
+			showButtonPanel: true
+		} // end of jqOpts
+	}
+}, {
+	dataField: "field4",
+    headerText: "월 단위 달력 출력",
+	dataType : "date",
+	dateInputFormat : "yyyymm", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월", // 실제 데이터 형식을 어떻게 표시할지 지정
+	headerTooltip : {
+		show : true,
+		tooltipHtml : "jQuery datepicker 에서 자체적으로 월단위 선택 지원 안하므로 월단위는 기본 달력 사용"
+	},
+	width:160,
+	editRenderer : {
+		type : "CalendarRenderer",
+		defaultFormat : "yyyymm", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		showEditorBtnOver : true, // 마우스 오버 시 에디터버턴 출력 여부
+		onlyMonthMode : true // 일 단위 달력이 아닌 월 단위 달력 출력
+	}
+}, {
+	dataField: "field5",
+    headerText: "에디팅 진입 시 바로 열기",
+	dataType : "date",
+	dateInputFormat : "yyyymmdd", // 실제 데이터의 형식 지정
+	formatString : "yyyy년 mm월 dd일", // 실제 데이터 형식을 어떻게 표시할지 지정
+	width:160,
+	editRenderer : {
+		type : "JQCalendarRenderer",
+		defaultFormat : "yyyymmdd", // 달력 선택 시 데이터에 적용되는 날짜 형식
+		openDirectly : true, // 에디팅 진입 시 바로 달력 열기
+		onlyCalendar : false,
+		
+		// jquery-datepicker 속성을 여기에 설정하십시오.
+		// API : http://api.jqueryui.com/datepicker/#option-appendText
+		jqOpts : {
+			changeMonth: true,
+			changeYear: true,
+			selectOtherMonths : true,
+			showOtherMonths: true
+		} // end of jqOpts
+	}
+}];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			showRowCheckColumn : false,
+			showRowNumColumn : false,
+			editable : true
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+	
+	// 그리드 데이터 삽입.
+	AUIGrid.setGridData(myGridID, gridData);
+}
+
+//그리드 데이터
+var gridData = [{"field0":"20190625","field1":"20190625","field2":"20190625","field3":"20190625","field4":"201906","field5":"20190625"},{"field0":"20190615","field1":"20190615","field2":"20190615","field3":"20190615","field4":"201906","field5":"20190615"},{"field0":"20190605","field1":"20190605","field2":"20190605","field3":"20190605","field4":"201906","field5":"20190605"},{"field0":"20190526","field1":"20190526","field2":"20190526","field3":"20190526","field4":"201905","field5":"20190526"},{"field0":"20190516","field1":"20190516","field2":"20190516","field3":"20190516","field4":"201905","field5":"20190516"},{"field0":"20190506","field1":"20190506","field2":"20190506","field3":"20190506","field4":"201905","field5":"20190506"},{"field0":"20190426","field1":"20190426","field2":"20190426","field3":"20190426","field4":"201904","field5":"20190426"},{"field0":"20190416","field1":"20190416","field2":"20190416","field3":"20190416","field4":"201904","field5":"20190416"},{"field0":"20190406","field1":"20190406","field2":"20190406","field3":"20190406","field4":"201904","field5":"20190406"},{"field0":"20190327","field1":"20190327","field2":"20190327","field3":"20190327","field4":"201903","field5":"20190327"},{"field0":"20190317","field1":"20190317","field2":"20190317","field3":"20190317","field4":"201903","field5":"20190317"},{"field0":"20190307","field1":"20190307","field2":"20190307","field3":"20190307","field4":"201903","field5":"20190307"},{"field0":"20190225","field1":"20190225","field2":"20190225","field3":"20190225","field4":"201902","field5":"20190225"},{"field0":"20190215","field1":"20190215","field2":"20190215","field3":"20190215","field4":"201902","field5":"20190215"},{"field0":"20190205","field1":"20190205","field2":"20190205","field3":"20190205","field4":"201902","field5":"20190205"},{"field0":"20190126","field1":"20190126","field2":"20190126","field3":"20190126","field4":"201901","field5":"20190126"},{"field0":"20190116","field1":"20190116","field2":"20190116","field3":"20190116","field4":"201901","field5":"20190116"},{"field0":"20190106","field1":"20190106","field2":"20190106","field3":"20190106","field4":"201901","field5":"20190106"},{"field0":"20181227","field1":"20181227","field2":"20181227","field3":"20181227","field4":"201812","field5":"20181227"},{"field0":"20181217","field1":"20181217","field2":"20181217","field3":"20181217","field4":"201812","field5":"20181217"},{"field0":"-","field1":"-","field2":"-","field3":"현재 작업 재개 중","field4":"-"}];
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>수정 편집 모드(editing=true 설정) 에서 달력을 출력할 때 jQuery UI-datepicker 달력을 선택할 수 있도록 작성된 에디트렌더러입니다.</p>
+		<p>하나의 웹 사이트에서 통일된 달력 UI 의 필요성으로 인해 당사에서 jQuery UI-datepicker 를 AUIGrid 의 에디트렌더러로 작성하였습니다.</p>
+		<p>따라서 기본적으로 jQuery UI-datepicker 의 사용법을 알아야 가능합니다.</p>
+		<p>jQuery UI-datepicker 출처 : <a href="http://jqueryui.com/datepicker" target="_blank">http://jqueryui.com/datepicker</a></p>
+		<p>jQuery UI-datepicker 의 라이선스는 MIT (https://jquery.org/license/) 으로 상용으로 사용해도 무관합니다.</p> 
+		<p>키보드 인터렉션은 기본 달력과 동일하게 지원합니다.(예: 방향키, PgUp, PgDn 등)</p>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:320px; margin:0 auto;"></div>
+	</div>
+	<div class="desc">
+	<p>사용법은 다음과 같이 jQuery UI-datepicker 를 추가하고, 칼럼 레이아웃 정의 시 type 을 "JQCalendarRenderer" 로 지정하십시오.</p>
+<div class="src_cover"><pre><span style="color:#ff0000;">JQCalendarRenderer 사용을 위해 jquery-ui JS 와 CSS 를 다음과 같이 추가 하십시오.</span>
+<div class="src_cover"><xmp><head>
+....
+....
+<!-- jQuery datepicker MIT 라이센스 -->
+<!-- 출처 및 다운로드 : http://jqueryui.com/datepicker-->
+<script type="text/javascript"	src="./external/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<link href="./external/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet">
+.....
+.....
+<script type="text/javascript">
+....
+....</xmp></div>
+// AUIGrid 칼럼 레이아웃 설정
+var columnLayout = [{
+	dataField: "field0",
+	headerText: "달력으로만 날짜 수정",
+	dataType : "date",
+	formatString : "yyyy년 mm월 dd일",
+	width:160,
+	editRenderer : {
+	      <span style="color:#ff0000;">type : "JQCalendarRenderer", // jQuery UI-datepicker 달력 렌더러 사용</span>
+	      onlyCalendar : true, // 에디터에 달력만 나옴. 즉, Inputer 입력 불가 (기본값 true)
+	      // jquery-datepicker 속성을 여기에 설정하십시오.
+	      // API : http://api.jqueryui.com/datepicker/#option-appendText
+	      jqOpts : {
+	    	  changeMonth: true,
+				changeYear: true,
+				selectOtherMonths : true,
+				showOtherMonths: true
+	      }
+	}
+	.....
+	.....
+}];
+</pre></div>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

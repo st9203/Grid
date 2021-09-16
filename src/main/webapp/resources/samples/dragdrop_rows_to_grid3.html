@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<script type="text/javascript">
+
+// 상단 그리드 생성 후 반환 ID
+var myGridID;
+
+// 하단 그리드 생성 후 반환ID
+var myGridID2, myGridID3;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// 상단 그리드를 생성합니다.
+	createAUIGrid();
+	
+	// 하단 그리드를 생성합니다.
+	createDetailAUIGrid();
+	
+	// 하단 그리드2를 생성합니다.
+	createDetailAUIGrid2();
+	
+	// 데이터 요청하여 상단 그리드에 삽입
+	requestData("./data/normal_500.json");
+};
+
+// Master 그리드 를 생성합니다.
+function createAUIGrid() {
+	
+	// AUIGrid 칼럼 설정
+	var columnLayout = [ {
+		dataField : "id",
+		headerText : "ID",
+		width : 160
+	}, {
+		dataField : "name",
+		headerText : "Name",
+		width : 160
+	}, {
+		dataField : "flag",
+		headerText : "Flag IMG",
+		editable : false,
+		prefix : "./assets/",
+		renderer : {
+			type : "ImageRenderer",
+			imgHeight : 24,
+			altField : "country"
+		},
+		width : 140
+	}, {
+		dataField : "product",
+		headerText : "Product",
+		width : 180
+	}, {
+		dataField : "price",
+		headerText : "Price",
+		dataType : "numeric",
+		style : "my-column",
+		width : 180
+	}, {
+		dataField : "quantity",
+		headerText : "Quantity",
+		dataType : "numeric",
+		style : "my-column",
+		width : 160
+	}, {
+		dataField : "date",
+		headerText : "Date"
+	}];
+
+	
+	// 그리드 속성 설정
+	var gridPros = {
+			selectionMode : "multipleRows",
+			// 드래깅 행 이동 가능 여부 (기본값 : false)
+			enableDrag : true,
+			// 다수의 행을 한번에 이동 가능 여부(기본값 : true)
+			enableMultipleDrag : true,
+			// 셀에서 바로  드래깅 해 이동 가능 여부 (기본값 : false) - enableDrag=true 설정이 선행 
+			enableDragByCellDrag : true,
+			// 드랍 가능 여부 (기본값 : true)
+			// false 설정했다는 의미는 이 그리드는 드래깅만 가능하고, 드랍은 절대 받지 않는다는 뜻임.
+			enableDrop : false,
+			// 드랍을 받아줄 그리드가 다른 그리드에도 있는지 여부 (기본값 : false)
+			// 즉, 드리드 간의 행 이동인지 여부
+			dropToOthers : true
+	};
+
+	// 실제로 #grid_wrap01 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap01", columnLayout, gridPros);
+	
+	// 드랍 종료 이벤트 바인딩
+	AUIGrid.bind(myGridID, "dropEnd", dropEndEventHandler);
+}
+
+// 하단 그리드 생성
+function createDetailAUIGrid() {
+	
+	// AUIGrid 칼럼 설정
+	var columnLayout = [{
+		dataField : "id",
+		headerText : "ID",
+		width : 120
+	}, {
+		dataField : "name",
+		headerText : "Name",
+		width : 120
+	}, {
+		dataField : "country",
+		headerText : "Country",
+		width : 140
+	}, {
+		dataField : "product",
+		headerText : "Product"
+	}];
+	
+	// 그리드 속성 설정
+	var gridPros = {
+			selectionMode : "multipleCells",
+			// 드래깅 행 이동 가능 여부 (기본값 : false)
+			enableDrag : true,
+			// 다수의 행을 한번에 이동 가능 여부(기본값 : true)
+			enableMultipleDrag : true,
+			// 셀에서 바로  드래깅 해 이동 가능 여부 (기본값 : false) - enableDrag=true 설정이 선행 
+			enableDragByCellDrag : true,
+			// 드랍 가능 여부 (기본값 : true)
+			enableDrop : true,
+			// 드랍을 받아줄 그리드가 다른 그리드에도 있는지 여부 (기본값 : false)
+			// 즉, 드리드 간의 행 이동인지 여부
+			dropToOthers : true,
+			// 이 그리드에서 드래깅을 했을 때 드랍을 받아줄 그리드는 자기 자신과 다음 2개의 그리드임.(자기 자신과 3번 그리드)
+			// 본 데모에서 #grid_wrap01 의 enableDrop 을 false 설정했기 때문에 남은 그리드는 다음 2개임.
+			// 따라서 본 데모에선 dropAcceptableGridIDs 정의 하지 않아도 동일한 결과를 얻음.
+			dropAcceptableGridIDs : ["#grid_wrap02", "#grid_wrap03"]
+	};
+
+	// 실제로 #grid_wrap02 에 그리드 생성
+	myGridID2 = AUIGrid.create("#grid_wrap02", columnLayout, gridPros);
+	
+	// 드랍 종료 이벤트 바인딩
+	AUIGrid.bind(myGridID2, "dropEnd", dropEndEventHandler);
+	
+	// 최초 빈 배열로 초기화
+	AUIGrid.setGridData(myGridID2, []);
+};
+
+//하단 그리드 생성
+function createDetailAUIGrid2() {
+	
+	// AUIGrid 칼럼 설정
+	var columnLayout = [{
+		dataField : "id",
+		headerText : "ID",
+		width : 120
+	}, {
+		dataField : "name",
+		headerText : "Name",
+		width : 120
+	}, {
+		dataField : "price",
+		headerText : "Price",
+		dataType : "numeric",
+		style : "my-column",
+		width : 100
+	}, {
+		dataField : "quantity",
+		headerText : "Quantity",
+		dataType : "numeric",
+		style : "my-column",
+		width : 80
+	}, {
+		dataField : "date",
+		headerText : "Date"
+	}];
+	
+	// 그리드 속성 설정
+	var gridPros = {
+			selectionMode : "multipleCells",
+			// 드래깅 행 이동 가능 여부 (기본값 : false)
+			enableDrag : true,
+			// 다수의 행을 한번에 이동 가능 여부(기본값 : true)
+			enableMultipleDrag : true,
+			// 셀에서 바로  드래깅 해 이동 가능 여부 (기본값 : false) - enableDrag=true 설정이 선행 
+			enableDragByCellDrag : true,
+			// 드랍 가능 여부 (기본값 : true)
+			enableDrop : true,
+			// 드랍을 받아줄 그리드가 다른 그리드에도 있는지 여부 (기본값 : false)
+			// 즉, 드리드 간의 행 이동인지 여부
+			dropToOthers : true,
+			// 이 그리드에서 드래깅을 했을 때 드랍을 받아줄 그리드는 다음 2개의 그리드임.(자기 자신과 2번 그리드)
+			// 본 데모에서 #grid_wrap01 의 enableDrop 을 false 설정했기 때문에 남은 그리드는 다음 2개임.
+			// 따라서 본 데모에선 dropAcceptableGridIDs 정의 하지 않아도 동일한 결과를 얻음.
+			dropAcceptableGridIDs : ["#grid_wrap02", "#grid_wrap03"]
+	};
+
+	// 실제로 #grid_wrap03 에 그리드 생성
+	myGridID3 = AUIGrid.create("#grid_wrap03", columnLayout, gridPros);
+	
+	// 드랍 종료 이벤트 바인딩
+	AUIGrid.bind(myGridID3, "dropEnd", dropEndEventHandler);
+	
+	// 최초 빈 배열로 초기화
+	AUIGrid.setGridData(myGridID3, []);
+};
+
+// 드랍 완료 이벤트 핸들러
+function dropEndEventHandler(e) {
+	// 정보 출력
+	var gridDirection = "그리드 " + e.pid + " → " + e.pidToDrop;
+	var msg = gridDirection + " 드랍 완료 : " + e.fromRowIndex + "→" + e.toRowIndex + " 에 " + e.items.length + " 행(들) 드랍 됨";
+	document.getElementById("ellapse").innerHTML = msg; 
+};
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>3 개의 그리드 간의 드래그&amp;드랍으로 행 이동을 정의한 모습입니다.(이하 상단 1번, 하단 왼쪽 2번, 하단 오른쪽 3번 그리드로 칭함)</p>
+		<p></p>
+		 <p>기본적으로 행 이동에 제약없이 드래그&amp;드랍으로 서로 간에 행 이동을 할 수 있습니다. 그러나 특정 상황에서 다른 그리드에 드랍을 하지 못하도록 설정해야 할 필요가 있습니다.</p>
+		 <p>본 데모는 다음 규칙대로 드래그&amp;드랍이 가능하도록 설정하였습니다.</p>
+		 <p>■ 규칙 1 : 1번 그리드는 자신에서 자신으로 행 이동 불가능(즉, 드래그&amp;드랍은 타 그리드로만 가능하도록 설정)</p>
+		 <p>■ 규칙 2 : 1번 그리드의 행을 드래깅 했을 때 2번, 3번에 드래그&amp;드랍 가능</p>
+		 <p>■ 규칙 3 : 2번 그리드의 행을 드래깅 했을 때 자기 자신의 행 이동, 3번 그리드에만 가능. 즉, 2번에서 1번으로 드랍 불가능</p>
+		 <p>■ 규칙 4 : 3번 그리드의 행을 드래깅 했을 때 자기 자신의 행 이동, 2번 그리드에만 가능. 즉, 3번에서 1번으로 드랍 불가능</p>
+	</div>
+	<div>
+		<!-- 상단 Grid -->
+		<div id="grid_wrap01" style="width:1200px; height:240px; margin:0 auto;"></div>
+		
+		<div style="width:100%; height:20px;"></div>
+		
+		<!-- 하단 Grid -->
+		<div style="width:1200px; margin:0 auto;">
+			<div id="grid_wrap02" style="width:49%; height:280px; float:left;margin-right:2%;"></div>
+			<div id="grid_wrap03" style="width:49%; height:280px; float: right;"></div>
+			<div style="clear:both;"></div>
+		</div>
+		
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

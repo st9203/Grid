@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<!-- 브라우저 다운로딩 할 수 있는 JS 추가 -->
+<script type="text/javascript" src="../export_server_samples/FileSaver.min.js"></script>
+
+<!-- jQuery -->
+<script type="text/javascript"	src="http://code.jquery.com/jquery-1.10.2.js"></script>
+
+<style type="text/css">
+.my-align-right {
+	text-align:right;
+}
+</style>
+
+<script type="text/javascript">
+function documentReady() {};
+
+// 상단 그리드 생성 후 반환 ID
+var myGridID1, myGridID2;
+
+// 하단 그리드 생성 후 반환ID
+var myGridID3, myGridID4;
+
+// document ready 
+$(document).ready(function() {
+	// 상단 그리드를 생성합니다.
+	createAUIGrid1();
+	createAUIGrid2();
+	
+	// 하단 그리드를 생성합니다.
+	createAUIGrid3();
+	createAUIGrid4();
+	
+	// 데이터 요청
+	requestData();
+ });
+	
+// AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "country",
+		headerText : "Country"
+	}, {
+		dataField : "product",
+		headerText : "Product"
+	}, {
+		dataField : "name",
+		headerText : "Name"
+	}, {
+		dataField : "color",
+		headerText : "Color"
+	}, {
+		dataField : "price",
+		headerText : "Price",
+		dataType : "numeric",
+		formatString : "#,##0",
+		style : "my-align-right",
+	}
+];
+
+// 상단 그리드1 를 생성합니다.
+function createAUIGrid1() {
+	
+	// 실제로 #grid_wrap00 에 그리드 생성
+	myGridID1 = AUIGrid.create("#grid_wrap1", columnLayout);
+};
+
+//상단 그리드2 를 생성합니다.
+function createAUIGrid2() {
+	
+	// 그리드 속성 설정
+	var gridPros = {
+			// 차례로 country, product, name 순으로 그룹핑을 합니다.
+			// 즉, 각 나라별, 각 제품을 구매한 사용자로 그룹핑
+			groupingFields : ["country", "product", "name"],
+			
+			// 합계(소계) 설정
+			groupingSummary  : {
+				// 합계 필드는 price 1개에 대하여 실시 합니다.
+				dataFields : [ "price" ]
+			},
+				
+			// 그룹핑 후 셀 병합 실행
+			enableCellMerge : true,
+			
+			// 브랜치에 해당되는 행을 출력 여부
+			showBranchOnGrouping : false,
+			
+			// 그리드 ROW 스타일 함수 정의
+			rowStyleFunction : commonRowStyleFunction
+	};
+
+	// 실제로 #grid_wrap01 에 그리드 생성
+	myGridID2 = AUIGrid.create("#grid_wrap2", columnLayout, gridPros);
+};
+
+// 하단 그리드1 를 생성합니다.
+function createAUIGrid3() {
+	
+	// 그리드 속성 설정
+	var gridPros = {
+			// 차례로 country, product, name 순으로 그룹핑을 합니다.
+			// 즉, 각 나라별, 각 제품을 구매한 사용자로 그룹핑
+			groupingFields : ["country", "product", "name"],
+			
+			// 합계(소계) 설정
+			groupingSummary  : {
+				// 합계 필드는 price 1개에 대하여 실시 합니다.
+				dataFields : [ "price" ]
+			},
+				
+			// 그룹핑 후 셀 병합 실행
+			enableCellMerge : true,
+			
+			// 그룹핑 썸머리행에 값을 채움
+			fillValueGroupingSummary : true,
+			
+			// 브랜치에 해당되는 행을 출력 여부
+			showBranchOnGrouping : false,
+			
+			// 그리드 ROW 스타일 함수 정의
+			rowStyleFunction : commonRowStyleFunction
+	};
+
+	// 실제로 #grid_wrap02 에 그리드 생성
+	myGridID3 = AUIGrid.create("#grid_wrap3", columnLayout, gridPros);
+};
+
+//하단 그리드2 를 생성합니다.
+function createAUIGrid4() {
+	
+	// 그리드 속성 설정
+	var gridPros = {
+			// 차례로 country, product, name 순으로 그룹핑을 합니다.
+			// 즉, 각 나라별, 각 제품을 구매한 사용자로 그룹핑
+			groupingFields : ["country", "product", "name"],
+			
+			// 합계(소계) 설정
+			groupingSummary  : {
+				// 합계 필드는 price 1개에 대하여 실시 합니다.
+				dataFields : [ "price" ]
+			},
+				
+			// 그룹핑 후 셀 병합 실행
+			enableCellMerge : true,
+			
+			// 그룹핑 썸머리행에 값을 채움
+			fillValueGroupingSummary : true,
+
+			// 썸머리행의 소계 위치를 동일 선상의 열(column)에 위치하도록 합니다.
+			// 동일 선상은 groupingFields 의 마지막 필드인 name 에 일치시킵니다.
+			adjustSummaryPosition : true,
+			
+			// 브랜치에 해당되는 행을 출력 여부
+			showBranchOnGrouping : false,
+			
+			// 그리드 ROW 스타일 함수 정의
+			rowStyleFunction : commonRowStyleFunction
+	};
+
+	// 실제로 #grid_wrap03 에 그리드 생성
+	myGridID4 = AUIGrid.create("#grid_wrap4", columnLayout, gridPros);
+};
+
+// 행 스타일 결정 함수
+function commonRowStyleFunction(rowIndex, item) {
+	
+	if(item._$isGroupSumField) { // 그룹핑으로 만들어진 합계 필드인지 여부
+		
+		// 그룹핑을 더 많은 필드로 하여 depth 가 많아진 경우는 그에 맞게 스타일을 정의하십시오.
+		// 현재 3개의 스타일이 기본으로 정의됨.(AUIGrid_style.css)
+		switch(item._$depth) {  // 계층형의 depth 비교 연산
+		case 2:
+			return "aui-grid-row-depth1-style";
+		case 3:
+			return "aui-grid-row-depth2-style";
+		case 4:
+			return "aui-grid-row-depth3-style";
+		default:
+			return "aui-grid-row-depth-default-style";
+		}
+	}
+	
+	return null;
+} // end of rowStyleFunction
+
+function requestData() {
+	$.get("./data/country_phone_1000.json", function(data) {
+		AUIGrid.setGridData(myGridID1, data);
+		AUIGrid.setGridData(myGridID2, data);
+		AUIGrid.setGridData(myGridID3, data);
+		AUIGrid.setGridData(myGridID4, data);
+	});
+};
+
+//엑셀로 내보내기
+//엑셀 파일 1개에 4개의 그리드를 각각 4개의 시트(sheet)로 내보내기 합니다.
+function exportToXlsxMulti1() {
+	
+	var exportProps = [{
+		sheetName : "일반 데이터"
+	}, {
+		sheetName : "그룹핑 셀병합 Type 1"
+	}, {
+		sheetName : "그룹핑 셀병합 Type 2",
+	}, {
+		sheetName : "그룹핑 셀병합 Type 3"
+	}];
+	// 다수의 그리드를 1개의 엑셀의 각각의 시트(Sheets)로  내보내기 하기
+	AUIGrid.exportToXlsxMulti(myGridID1, [myGridID2, myGridID3, myGridID4], exportProps);
+};
+
+// 엑셀로 내보내기
+// 엑셀 파일 시트의 상단에 텍스트를 지정하고 내보내기 합니다.
+function exportToXlsxMulti2() {
+	
+	var exportProps = [{
+		sheetName : "일반 데이터",
+		progressBar : true,
+		// 헤더 내용
+		headers : [ {
+			text : "원본 데이터 리스트", height:24, style : { fontSize:20, textAlign:"center", fontWeight:"bold", underline:true, background:"#DAD9FF"}
+		}, {
+			text : "", height:5, style : { background:"#555555"} // 빈줄 색깔 경계 만듬
+		}]
+	}, {
+		sheetName : "그룹핑 셀병합 Type 1",
+		// 헤더 내용
+		headers : [ {
+			text : "그룹핑 셀병합 Type 1 리스트", height:24, style : { fontSize:20, textAlign:"center", fontWeight:"bold", underline:true, background:"#DAD9FF"}
+		}, {
+			text : "", height:5, style : { background:"#555555"} // 빈줄 색깔 경계 만듬
+		}]
+	}, {
+		sheetName : "그룹핑 셀병합 Type 2",
+		// 헤더 내용
+		headers : [ {
+			text : "그룹핑 셀병합 Type 2 리스트", height:24, style : { fontSize:20, textAlign:"center", fontWeight:"bold", underline:true, background:"#DAD9FF"}
+		}, {
+			text : "", height:5, style : { background:"#555555"} // 빈줄 색깔 경계 만듬
+		}]
+	}, {
+		sheetName : "그룹핑 셀병합 Type 3",
+		// 헤더 내용
+		headers : [ {
+			text : "그룹핑 셀병합 Type 3 리스트", height:24, style : { fontSize:20, textAlign:"center", fontWeight:"bold", underline:true, background:"#DAD9FF"}
+		}, {
+			text : "", height:5, style : { background:"#555555"} // 빈줄 색깔 경계 만듬
+		}]
+	}];
+	// 다수의 그리드를 1개의 엑셀의 각각의 시트(Sheets)로  내보내기 하기
+	AUIGrid.exportToXlsxMulti(myGridID1, [myGridID2, myGridID3, myGridID4], exportProps);
+};
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>4 개의 그리드를 1개의 엑셀 안의 4개의 시트(sheets) 에 내보내기(export) 합니다.</p>
+<div class="src_cover"><pre>
+// 다수의 그리드를 1개의 엑셀의 각각의 시트(Sheets)로  내보내기 하기
+AUIGrid.exportToXlsxMulti(myGridID1, [myGridID2, myGridID3, myGridID4], exportProps);
+</pre></div>
+		<div>
+			<span class="btn" onclick="exportToXlsxMulti1()">엑셀로 내보내기</span>
+			<span class="btn" onclick="exportToXlsxMulti2()">엑셀 시트에 각각 제목 등의 정보 넣고 내보내기</span>
+		</div>
+	</div>
+	<div>
+		<!-- 상단 Grid -->
+		<div style="width:1200px; margin:0 auto;">
+			<div id="grid_wrap1" style="width:49%; height:280px; float:left;margin-right:2%;"></div>
+			<div id="grid_wrap2" style="width:49%; height:280px; float: right;"></div>
+			<div style="clear:both;"></div>
+		</div>
+		
+		<div style="width:100%; height:20px;"></div>
+		
+		<!-- 하단 Grid -->
+		<div style="width:1200px; margin:0 auto;">
+			<div id="grid_wrap3" style="width:49%; height:280px; float:left;margin-right:2%;"></div>
+			<div id="grid_wrap4" style="width:49%; height:280px; float: right;"></div>
+			<div style="clear:both;"></div>
+		</div>
+		
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

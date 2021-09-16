@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="pragma" content="no-cache"/>
+<meta http-equiv="cache-control" content="no-cache"/>
+<meta http-equiv="Content-Script-Type" content="text/javascript"/>
+<meta http-equiv="Content-Style-Type" content="text/css"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+<meta name="title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid"/>
+<meta name="url" content="http://www.auisoft.net/">
+<meta name="description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft"/>
+<title>AUIGrid 자바스크립트 데이터그리드(Javascript DataGrid  AUIGrid)</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<link href="./style/AUIGrid_style.css" rel="stylesheet"/>
+<!-- ajax 요청을 위한 스크립트입니다. 실제프로젝트에선 더 좋은 jQuery 등 사용하세요. -->
+<script type="text/javascript" src="./js/ajax.js"></script>
+
+<!-- 데모를 위한 스크립트입니다. -->
+<script type="text/javascript" src="./js/demo.js"></script>
+
+<!-- 공용 Ajax 요청 스크립트 -->
+<script type="text/javascript" src="./js/common.js"></script>
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="./js/AUIGridLicense.js"></script>
+<script type="text/javascript" src="./js/AUIGrid.js"></script>
+<style type="text/css">
+
+/* 커스텀 칼럼 스타일 정의 */
+.my-right-column {
+	text-align:right;
+}
+</style>
+
+<script type="text/javascript">
+
+var theme = "default";
+
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// 데이터 요청, 요청 성공 시 AUIGrid 에 데이터 삽입합니다.
+	var url = "./data/normal_100.json";
+	requestData(url);
+};
+
+// AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "name",
+		headerText : "이름",
+		width : "15%",
+		minWidth : 80
+	}, {
+		dataField : "country",
+		headerText : "국가명",
+		width : "15%",
+		minWidth : 80,
+		prefix : "./assets/",
+		renderer : {
+			type : "ImageRenderer",
+			imgHeight : 24, // 이미지 높이, 지정하지 않으면 rowHeight에 맞게 자동 조절되지만 빠른 렌더링을 위해 설정을 추천합니다.
+			altField : "country", // alt(title) 속성에 삽입될 필드명, 툴팁으로 출력됨
+			imgTableRef :  { // icon 값 참조할 테이블 레퍼런스
+				"Korea" : "./assets/korea.png",
+				"USA" : "./assets/usa.png",
+				"UK" : "./assets/uk.png",
+				"Japan" : "./assets/japan.png",
+				"France" : "./assets/france.png",
+				"Italy" : "./assets/italy.png",
+				"China" : "./assets/china.png",
+				"Singapore" : "./assets/singapore.png",
+				"Ireland" : "./assets/ireland.png",
+				"Taiwan" : "./assets/taiwan.png",
+				"default" : "./assets/glider.png" //default
+			}
+		},
+		editRenderer : {
+			type : "DropDownListRenderer",
+			list : ["Korea", "USA", "UK", "Japan", "China", "France", "Italy", "Singapore", "Ireland", "Taiwan"]
+		}
+	}, {
+		dataField : "product",
+		headerText : "제품명",
+		width: "15%",
+		minWidth : 80
+	}, {
+		dataField : "quantity",
+		headerText : "수량",
+		dataType : "numeric",
+		width: "15%",
+		minWidth : 30,
+		filter : {
+			showIcon : true,
+			useExMenu : true
+		}
+	}, {
+		dataField : "price",
+		headerText : "가격",
+		style : "my-right-column",
+		dataType : "numeric",
+		width: "20%",
+		minWidth : 80,
+		editRenderer : {
+			type : "InputEditRenderer",
+			onlyNumeric : true, // 0~9만 입력가능
+			textAlign : "right" // 오른쪽 정렬로 입력되도록 설정
+		}
+	}, {
+		dataField : "date",
+		headerText : "날짜",
+		width: "20%",
+		minWidth : 100,
+		dataType : "date",
+		formatString : "yyyy. mm. dd.",
+		editRenderer : {
+			type : "CalendarRenderer",
+			showExtraDays : true // 지난 달, 다음 달 여분의 날짜(days) 출력
+		}
+	}
+];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			
+			editable : true,
+			
+			// 모바일 기기에서 스크롤 크기 작게
+			autoScrollSize : true,
+			
+			// 모바일 기기에서 무조건 싱글 탭(1번 클릭) 으로 편집 모드 진입
+			// 즉, editingBeginMode="doubleClick" 인 경우 PC는 더블클릭이라도 모바일은 싱글 탭임.
+			autoEditBeginMode : true,
+			
+			// 모바일 기기의 스크롤 크기
+			scrollHeight4Mobile : 4,
+			
+			// 셀을 클릭하면 가상 키보드가 올라오나요?
+			// enableFocus  = false 설정하십시오.
+			enableFocus : false,
+			
+			// 페이징 사용 여부
+			usePaging : true,
+			
+			// 페이징을 간단한 유형으로 나오도록 설정
+			pagingMode : "simple",
+			
+			// 한 화면에 출력되는 행 개수 20(기본값:20)
+			pageRowCount : 20,
+			
+			// 세로 스크롤 없이 그리드 높이 자동 결정
+			autoGridHeight : true,
+			
+			// 하단에 페이지 행 개수 변경 select 출력할지 여부(기본값:false)
+			showPageRowSelect : true,
+			
+			// 행 개수 변경 select 의 변경 값들. 반드시 pageRowCount 속성의 값(기본값:20) 을 포함시키십시오.
+			pageRowSelectValues : [5, 10, 15, 25, 30],
+			
+			enableFilter : true
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+}
+
+var timerId = null;
+
+//oreientation 속성이 있는지 여부.. 있다면 모바일임.
+if(typeof window.orientation !== "undefined") {
+	// 스마트폰 가로, 세로 변경된 경우 이벤트
+	window.onorientationchange = function() {
+		
+		// 300ms 보다 빠르게 oreientation 된다면..
+		if(timerId) {
+			clearTimeout(timerId);
+		}
+		
+		// 크기가 변경되었을 때 AUIGrid.resize() 함수 호출
+		// setTimeout 을 사용한 이유: 스마트폰 가로, 세로를 변경했을 때 즉각적으로 DOM 의 크기가 반영되지 않음.
+		// 즉, 어느정도 시간을 두고 크기가 반영됨. 이 시간 후에 AUIGrid.resize 메소드 실행함. (이 시간은 기기마다 조금씩 차이가 있음)
+		timerId = setTimeout(function() {
+			// 그리드 리사이징
+			if(myGridID) {
+				AUIGrid.resize(myGridID);
+			}
+		},300);  // 현재 300ms 민감도....환경에 맞게 조절하세요.
+	};
+} else {
+	// 리사이즈 이벤트
+	window.onresize = function() {
+		
+		// 200ms 보다 빠르게 리사이징 된다면..
+		if(timerId) {
+			clearTimeout(timerId);
+		}
+		
+		timerId = setTimeout(function() {
+			
+			// 그리드 리사이징
+			if(myGridID) {
+				AUIGrid.resize(myGridID);
+			}
+		}, 200);  // 현재 200ms 민감도....환경에 맞게 조절하세요.
+	};
+}
+
+/*
+// 윈도우 리사이징 이벤트
+window.onresize = function() {
+	// 안드로이드는 가상 키보드(soft keyboard)가 보여질때도 
+	// 리사이징 이벤트가 발생함.
+	// 따라서 가상 키보드가 올라오거나 없어질 때 resize 가 발생하기 때문에 실질적으로 orientationchange 이벤트에서 핸들링하길..
+};
+
+// 스마트폰 가로, 세로 변경된 경우 이벤트
+window.onorientationchange = function() {
+	// 크기가 변경되었을 때 AUIGrid.resize() 함수 호출
+	// setTimeout 을 사용한 이유: 스마트폰 가로, 세로를 변경했을 때 즉각적으로 DOM 의 크기가 반영되지 않음.
+	// 즉, 어느정도 시간을 두고 크기가 반영됨. 이 시간 후에 AUIGrid.resize 메소드 실행함. (이 시간은 기기마다 조금씩 차이가 있음)
+	if (myGridID) {
+		setTimeout(function() {
+			AUIGrid.resize(myGridID);
+		},300);
+	}
+};*/
+</script>
+
+</head>
+<body>
+
+<div style="margin:4px;">
+	<div>
+		<div style="margin:10px;">
+			<p>본 데모를 모바일 기기에서 확인하십시오.</p>
+			<p>모바일 기기(아이폰, 안드로이드, 아이패드 등)에서 기본적으로 더블 탭(더블 클릭)으로 편집을 할 수 있습니다.</p>
+			<p>그러나 해당 데모는 PC 접속 시 더블 클릭, 모바일 기기는 싱글 탭(1번 클릭) 으로 수정 진입 모드를 설정한 모습입니다.(autoEditBeginMode=true 설정)</p>
+			<p>그리드의 세로 스크롤을 생성하지 않아 모바일 터치의 제약이 없습니다.</p>
+			<p><a href="./editing_touch_device.html">기본 데모 보기</a></p>
+		</div>
+		
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:100%;"></div>
+	</div>
+</div>
+
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright © 2019 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

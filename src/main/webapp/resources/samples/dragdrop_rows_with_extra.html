@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<style type="text/css">
+.demo_gif_cap {
+	display:inline-block;
+	width:240px;
+	text-align:center;
+}
+</style>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// 그리드를 생성합니다.
+	createAUIGrid();
+	
+	// 데이터 요청하여 상단 그리드에 삽입
+	requestData("./data/normal_500.json");
+};
+
+//  그리드 를 생성합니다.
+function createAUIGrid() {
+	
+	// AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "id",
+		headerText : "ID",
+		width : 160
+	}, {
+		dataField : "name",
+		headerText : "Name",
+		width : 160
+	}, {
+		dataField : "flag",
+		headerText : "Flag IMG",
+		editable : false,
+		prefix : "./assets/",
+		renderer : {
+			type : "ImageRenderer",
+			imgHeight : 24,
+			altField : "country"
+		},
+		width : 240
+	}, {
+		dataField : "product",
+		headerText : "Product",
+		width : 180
+	}, {
+		dataField : "price",
+		headerText : "Price",
+		dataType : "numeric",
+		style : "my-column",
+		width : 280
+	}, {
+		dataField : "quantity",
+		headerText : "Quantity",
+		dataType : "numeric",
+		style : "my-column",
+		width : 160
+	}, {
+		dataField : "date",
+		headerText : "Date"
+	}];
+
+	
+	// 그리드 속성 설정
+	var gridPros = {
+		// 행 드래그&드랍을 도와주는 엑스트라 칼럼을 최좌측에 생성합니다.
+		showDragKnobColumn : true,
+		// 드래깅 행 이동 가능 여부 (기본값 : false)
+		enableDrag : true,
+		// 다수의 행을 한번에 이동 가능 여부(기본값 : true)
+		enableMultipleDrag : true,
+		// 셀에서 바로  드래깅 해 이동 가능 여부 (기본값 : false) - enableDrag=true 설정이 선행 
+		enableDragByCellDrag : true,
+		// 드랍 가능 여부 (기본값 : true)
+		enableDrop : true,
+		editable : true
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, gridPros);
+	
+	// 드래깅 시작 이벤트 바인딩	
+	AUIGrid.bind(myGridID, "dragBegin", function(e) {
+		// 정보 출력
+		document.getElementById("ellapse_b").innerHTML = "드래깅 시작 : " + e.items.length + " row(s)"; 
+	});
+	
+	// 드랍 종료 이벤트 바인딩
+	AUIGrid.bind(myGridID, "dropEnd", function(e) {
+		// 정보 출력
+		var direction = e.direction == true ? "위에서 아래로" : "아래에서 위로";
+		var msg = "드랍 완료 : " + e.fromRowIndex + "→" + e.toRowIndex + " 에 " + e.items.length + " 행(들) 드랍 됨(진행 방향 : " + direction + ")";
+		document.getElementById("ellapse_e").innerHTML = msg; 
+	});
+}
+
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>그리드에서 마우스 드래그&amp;드랍으로 행 이동을 돕는 엑스트라 칼럼을 출력한 모습입니다.(showDragKnobColumn=true 설정)</p>
+		<p>기존의 드래그&amp;드랍으로 행 이동 인터페이스는 동일하게 사용 가능합니다.</p>
+		<p>즉, 기존 드래그&amp;드랍 방식의 행 이동은 그대로 사용 가능하며 최좌측에 생성된 엑스트라 드래깅 칼럼을 통해 <strong>추가된 사용자 인터페이스</strong>를 제공한 모습입니다.</p>
+		<p>계층형 그리드(트리 그리드)에서도 동일하게 사용 가능합니다.(<a href="javascript:changeLocation('./dragdrop_tree_with_extra.html?ddrextra')">트리그리드 데모 보기</a>)</p>
+		<p><a href="javascript:changeLocation('./dragdrop_rows.html?ddrows')">기존 드래그&드랍 방식의 행 이동 데모 보기</a></p>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:380px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse_b"></p>
+		<p id="ellapse_e"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

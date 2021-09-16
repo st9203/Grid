@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<!-- 브라우저 다운로딩 할 수 있는 JS 추가 -->
+<script type="text/javascript" src="../export_server_samples/FileSaver.min.js"></script>
+
+<style type="text/css">
+.aui-grid-default-column {
+	text-align:right;
+}
+.aui-grid-default-footer {
+	text-align:right;
+}
+.aui-grid-my-column {
+	text-align:center;
+}
+</style>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// 데이터 삽입
+	AUIGrid.setGridData(myGridID, gridData);
+};
+
+// AUIGrid 칼럼 설정
+var columnLayout = [{
+	dataField: "p1801",
+    headerText: "`18 1월",
+	dataType : "numeric",
+	formatString : "#,##0",
+	xlsxNumeric : true // 엑셀에 실제 숫자값으로 내보내기 함.
+}, {
+    dataField: "p1802",
+    headerText: "`18 2월",
+	dataType : "numeric",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}, {
+    dataField: "p1803",
+    headerText: "`18 3월",
+	dataType : "numeric",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}, {
+    dataField: "p1804",
+    headerText: "`18 4월",
+	dataType : "numeric",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}, {
+    dataField: "p1805",
+    headerText: "`18 5월",
+	dataType : "numeric",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}, {
+    dataField: "p1806",
+    headerText: "`18 6월",
+	dataType : "numeric",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}];
+
+// 푸터 설정
+var footerLayout = [ {
+	labelText : "∑",
+	positionField : "#base"
+}, {
+	dataField : "p1801",
+	positionField : "p1801",
+	operation : "SUM",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}, {
+	dataField : "p1802",
+	positionField : "p1802",
+	operation : "SUM",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}, {
+	dataField : "p1803",
+	positionField : "p1803",
+	operation : "SUM",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}, {
+	dataField : "p1804",
+	positionField : "p1804",
+	operation : "SUM",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}, {
+	dataField : "p1805",
+	positionField : "p1805",
+	operation : "SUM",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}, {
+	dataField : "p1806",
+	positionField : "p1806",
+	operation : "SUM",
+	formatString : "#,##0",
+	xlsxNumeric : true
+}];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	// 그리드 속성 설정
+	var props = {
+			editable : true,
+			showFooter : true
+	};
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, props);
+	
+	// 푸터 레이아웃 세팅
+	AUIGrid.setFooter(myGridID, footerLayout);
+};
+
+function exportToXlsx() {
+	AUIGrid.exportToXlsx(myGridID);
+};
+
+
+// 그리드 데이터
+var gridData = [{"p1801":29255.751,"p1802":3823.378,"p1803":41212.823,"p1804":23590.235,"p1805":1848.296,"p1806":32107.704},{"p1801":54374.55,"p1802":87234.056,"p1803":45987.87,"p1804":11091.455,"p1805":82144.722,"p1806":75501.729},{"p1801":66904.017,"p1802":1952.701,"p1803":58603.54,"p1804":48023.533,"p1805":93911.47,"p1806":24009.975},{"p1801":16412.34,"p1802":58300.477,"p1803":92042.498,"p1804":40087.331,"p1805":85772.042,"p1806":23849.779},{"p1801":82004.538,"p1802":9420.859,"p1803":66286.95,"p1804":43979.225,"p1805":94878.831,"p1806":85768.203},{"p1801":32563.168,"p1802":84336.059,"p1803":37673.615,"p1804":67447.628,"p1805":16722.118,"p1806":77966.204},{"p1801":72938.327,"p1802":76123.628,"p1803":33881.893,"p1804":43855.07,"p1805":98512.707,"p1806":91990.392},{"p1801":38123.53,"p1802":27523.468,"p1803":5934.014,"p1804":42097.665,"p1805":23189.859,"p1806":68614.59},{"p1801":20835.324,"p1802":84015.898,"p1803":1299.714,"p1804":42307.815,"p1805":12222.069,"p1806":68374.894},{"p1801":76496.285,"p1802":36723.652,"p1803":43838.274,"p1804":43229.142,"p1805":63568.136,"p1806":90477.135}];
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+	<p>그리드에 출력된 숫자는 formatString 에 의해 포매팅되어 출력된 모습입니다.</p>
+	<p>예로 첫 셀의 값인 "29,256" 의 실제 값은 29255.751 입니다. 이 실제값을 보기 좋게 "#,##0" 으로 포매팅하였습니다.</p>
+	<p>기본적으로 엑셀로 내보내기 할 때 "29,256" 은 그대로 "29,256" 으로 내보내기 됩니다.</p>
+	<p>그러나 엑셀 내보내기 할 때 29255.751 로 내보내기 할 수 있습니다.</p>
+	<p>xlsxNumeric을 true 로 설정하면 엑셀에서 더블클릭 시 보이는 값(또는 엑셀의 수식창의 값)은 29255.751 로 나타나게 됩니다.</p>
+	<p>참고 : xlsxNumeric 은 formatString 이외 prefix, postfix, labelFunction 등으로 포매팅한 경우 무시됩니다.(formatString 설정 시에만 사용 가능함)</p>
+	<p>또한 rounding 속성으로 소수점을 반올림처리 할 때만 유효합니다.</p>
+	
+		<p><span onclick="exportToXlsx();" class="btn">엑셀로 내보내기</span></p>
+		
+<div class="src_cover"><pre>
+var columnLayout = [{
+	...
+}, {
+	dataField: "p1801",
+	headerText: "`18 1월",
+	dataType : "numeric",
+	formatString : "#,##0",
+	xlsxNumeric : true // 엑셀에 실제 숫자값으로 내보내기 함.
+</pre></div>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:320px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+		
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

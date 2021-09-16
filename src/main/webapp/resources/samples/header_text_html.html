@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<style type="text/css">
+/* 특정 칼럼(데모의 price)의 체크박스 크기 설정 */
+/* 확인할려면 칼럼레이아웃에 정의된 my-check-column 의 주석 제거 */
+.my-check-column .aui-checkbox {
+	width:20px !important;
+	height:20px !important;
+}
+</style>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// AUIGrid 에 데이터 삽입합니다.
+	AUIGrid.setGridData(myGridID, gridData);
+};
+
+
+//AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "col1",
+		headerText : '칼럼1<br/><img src="./assets/info-icon.png" style="vertical-align:middle;">',
+		width : 180
+	}, {
+		dataField : "col2",
+		headerText : '<img src="./assets/info-icon.png" style="vertical-align:middle;"><br/>칼럼2',
+		width : 180
+	}, {
+		dataField : "col3",
+		headerText : '칼럼3<img src="./assets/info-icon.png" style="vertical-align:middle;margin:0 0 0 4px;">',
+		width : 180
+	}, {
+		dataField : "col4",
+		headerText : '<img src="./assets/info-icon.png" style="vertical-align:middle;margin:0 4px 0 0;">칼럼4',
+		width : 180
+	}, {
+		dataField : "col5",
+		headerText : '<img src="./assets/info-icon.png" style="vertical-align:middle;">',
+		width : 180
+	}
+];
+
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			// 헤더 높이 지정
+			headerHeight : 40,
+			
+			editable : true,
+			
+			enableMovingColumn : true
+	};
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+};
+
+// 헤더렌더러 체크박스 클릭 핸들러
+function myHeaderCheckClick(event) {
+	alert("columnIndex : " + event.columnIndex + ", checked : " + event.checked);
+};
+
+// 그리드 데이터
+var gridData = [{"col1":false,"col2":true,"col3":true,"col4":true,"col5":false},{"col1":false,"col2":false,"col3":true,"col4":true,"col5":true},{"col1":true,"col2":true,"col3":false,"col4":false,"col5":false},{"col1":false,"col2":true,"col3":false,"col4":true,"col5":true},{"col1":true,"col2":true,"col3":false,"col4":true,"col5":true},{"col1":false,"col2":false,"col3":false,"col4":true,"col5":true},{"col1":true,"col2":false,"col3":false,"col4":false,"col5":true},{"col1":false,"col2":false,"col3":true,"col4":true,"col5":false},{"col1":true,"col2":true,"col3":false,"col4":false,"col5":false},{"col1":true,"col2":false,"col3":true,"col4":true,"col5":true},{"col1":true,"col2":true,"col3":false,"col4":true,"col5":true},{"col1":true,"col2":true,"col3":true,"col4":true,"col5":true},{"col1":false,"col2":true,"col3":true,"col4":true,"col5":true},{"col1":false,"col2":false,"col3":true,"col4":true,"col5":true},{"col1":false,"col2":true,"col3":true,"col4":false,"col5":false},{"col1":true,"col2":false,"col3":true,"col4":false,"col5":true},{"col1":false,"col2":false,"col3":false,"col4":true,"col5":false},{"col1":true,"col2":true,"col3":true,"col4":false,"col5":true},{"col1":false,"col2":true,"col3":false,"col4":false,"col5":false},{"col1":false,"col2":false,"col3":false,"col4":true,"col5":false}];
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>headerText 는 스트링을 정의하지만 HTML 형식의 스트링을 정의하면 그대로 HTML 을 표현합니다.</p>
+		<p>다음처럼 이미지 태그를 정의하면 이미지가 출력됩니다.</p>
+		<p>headerText 에 정의하는 HTML 형식의 스트링은 단순히 뷰(view) 역할만 할 뿐입니다.</p>
+		<p>즉, 컨트롤 역할을 하는 태그의 사용은 불가능합니다.</p>
+<div class="src_cover"><xmp>var columnLayout = [{
+    dataField: "region",
+    headerStyle : "my-column",
+    headerText: '<img src="./assets/info-icon.png" style="vertical-align:middle;margin:0 4px 0 0;">Code Name',
+    width: 120
+}, {
+  ...
+</xmp></div>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:320px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+		
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

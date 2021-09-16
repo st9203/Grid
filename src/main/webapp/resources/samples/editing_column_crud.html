@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// 데이터 요청, 요청 성공 시 AUIGrid 에 데이터 삽입합니다.
+	requestData("./data/normal_100.json");
+
+};
+
+//AUIGrid 칼럼 설정
+var columnLayout = [ {
+		dataField : "id",
+		headerText : "ID",
+		width : 120
+	}, {
+		dataField : "name",
+		headerText : "이름",
+		width:120
+	}, {
+		dataField : "country",
+		headerText : "나라",
+		width:120
+	}, {
+		dataField : "product",
+		headerText : "제품명",
+		width:120
+	}, {
+		dataField : "flag",
+		headerText : "이미지",
+		width : 120
+	}, {
+		dataField : "color",
+		headerText : "색상",
+		width : 120
+	}, {
+		dataField : "price",
+		headerText : "가격",
+		dataType : "numeric",
+		style : "my-column-right",
+		width : 120
+	}, {
+		dataField : "quantity",
+		headerText : "개수",
+		dataType : "numeric",
+		width : 120
+	}, {
+		dataField : "date",
+		headerText : "날짜",
+		width : 120
+}];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	// 그리드 속성
+	var auiGridProps = {
+		editable : true,
+		selectionMode : "multipleCells"
+	};
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+	
+	// 열 추가 이벤트 바인딩 
+	AUIGrid.bind(myGridID, "addColumn", function(event) {
+		var dataFields = event.dataFields;
+		var message = event.type + " 이벤트 :  " + "삽입된 열 인덱스 : " + event.columnIndex + ", 삽입된 열 개수 : " + dataFields.length;
+		document.getElementById("ellapse").innerHTML = message;
+	});
+
+	// 삭제 전 확인
+	// 열 삭제 전 이벤트 바인딩 
+	AUIGrid.bind(myGridID, "beforeRemoveColumn", function(event) {
+		var columnIndexes = event.columnIndexes;
+		var dataFields = event.dataFields;
+		var message = "삭제할 열 개수 : " + columnIndexes.length;
+		message += "\r\n삭제할 dataField(들) : " + dataFields.join(", ");
+		
+		var retVal = confirm(message);
+		
+		return retVal;
+	});
+	
+	// 열 삭제 완료 이벤트 바인딩
+	AUIGrid.bind(myGridID, "removeColumn", function(event) {
+		var dataFields = event.dataFields;
+		var message = "삭제 완료!!\r\n삭제된 dataField(들) : " + dataFields.join(", ");
+		document.getElementById("ellapse").innerHTML = message;
+	});
+};
+
+var idx = 1;
+
+// 단일 칼럼 추가
+function addColumn() {
+
+	// 추가되는 칼럼의 dataField;
+	var myDataField = "myNum" + idx;
+	
+	// 새로운 칼럼
+	var columnObj = {
+			headerText : "N-Column" + idx,
+			dataField : myDataField, // dataField 는 중복되지 않게 설정
+			width : 120,
+			defaultValue : "" // 칼럼 추가 할 때 해당 칼럼의 기본값 지정, 만약 지정하지 않으면 초기화 하지 않음
+	};
+	
+	// 추가할 칼럼 위치
+	var columnPos = document.getElementById("addSelect").value;
+	
+	// parameter
+	// columnObj : 삽입하고자 하는 칼럼 Object 또는 배열(배열인 경우 다수가 삽입됨)
+	// columnPos : columnIndex 인 경우 해당 index 에 삽입, "first" : 맨처음, "last" : 맨끝, "selectionLeft" : 선택 열 왼쪽에,  "selectionRight" : 선택 열 오른쪽에 추가
+	AUIGrid.addColumn(myGridID, columnObj, columnPos);
+
+	// 다음 dataField 를 위해 idx 증가 시킴
+	idx++;
+};
+
+
+// 다수의 칼럼 추가
+function addColumnMultiple() {
+
+	// 추가되는 칼럼의 dataField;
+	var myDataField = "myNum" + idx;
+	var myDataField2 = "myStr" + idx;
+	
+	// 새로운 칼럼들 작성
+	var columnArray = [{
+			headerText : "N-Column" + idx,
+			dataField : myDataField, // dataField 는 중복되지 않게 설정
+			dataType : "numeric",
+			formatString : "#,##0",
+			width : 120,
+			defaultValue : 0 // 칼럼 추가 할 때 해당 칼럼의 기본값 지정, 만약 지정하지 않으면 초기화 하지 않음
+	}, {
+		headerText : "S-Column" + idx,
+		dataField : myDataField2, // dataField 는 중복되지 않게 설정
+		width : 120,
+		defaultValue : "" // 칼럼 추가 할 때 해당 칼럼의 기본값 지정, 만약 지정하지 않으면 초기화 하지 않음
+	}];
+	
+	var columnPos = document.getElementById("multipleAddSelect").value;
+	
+	// parameter
+	// columnObj : 삽입하고자 하는 칼럼 Object 또는 배열(배열인 경우 다수가 삽입됨)
+	// columnPos : columnIndex 인 경우 해당 index 에 삽입, "first" : 맨처음, "last" : 맨끝, "selectionLeft" : 선택 열 왼쪽에,  "selectionRight" : 선택 열 오른쪽에 추가
+	AUIGrid.addColumn(myGridID, columnArray, columnPos);
+
+	// 다음 dataField 를 위해 idx 증가 시킴
+	idx++;
+};
+
+// 칼럼 삭제
+function removeColumn() {
+	
+	var columnPos = document.getElementById("removeSelect").value;
+	
+	// parameter
+	// columnPos : columnIndex 인 경우 해당 index 삭제, "selectedIndex" 지정한 경우 선택한 열(들) 삭제
+	AUIGrid.removeColumn(myGridID, columnPos);
+	
+	// 다수의 칼럼 삭제 예: 0, 2, 5 번째 칼럼 인덱스 삭제
+	// AUIGrid.removeColumn(myGridID, [0, 2, 5]);
+};
+
+//추가, 삭제된 칼럼의 dataField 확인
+function checkColumnFields() {
+	
+	// 추가된 칼럼의 dataField 들 얻기
+	var addedFields = AUIGrid.getAddedColumnFields(myGridID);
+	
+	// 삭제된 칼럼의 dataField 들 얻기
+	var removedFields = AUIGrid.getRemovedColumnFields(myGridID);
+	
+	var message = "";
+	
+	if(addedFields.length > 0) {
+		message += "추가된 열의 dataField(들)\r\n";
+		message += addedFields.join(", ") + "\r\n";
+	}
+	
+	if(removedFields.length > 0) {
+		message += "삭제된 열의 dataField(들)\r\n";
+		message += removedFields.join(", ");
+	}
+	
+	alert(message);
+};
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<ul class="nav_u">
+			<li>■ 단일 열(column) 추가 : </li>
+			<li><select id="addSelect">
+				<option value="last" selected="selected">마지막에 열 추가</option>
+				<option value="first">처음에 열 추가</option>
+				<option value="selectionLeft">선택 열 왼쪽에 추가</option>
+				<option value="selectionRight">선택 열 오른쪽에 추가</option>
+				<option value="5">columnIndex 5 에 추가</option>
+			</select></li>
+			<li><input type="button" class="btn" onclick="addColumn()" value="추가하기"></li>
+		</ul>
+		
+		<ul class="nav_u">
+			<li>■ 다수 열(column) 추가 : </li>
+			<li><select id="multipleAddSelect">
+				<option value="last" selected="selected">다수의 열 마지막에 추가</option>
+				<option value="first">다수의 열 처음에 추가</option>
+				<option value="selectionLeft">선택 열 왼쪽에 추가</option>
+				<option value="selectionRight">선택 열 오른쪽에 추가</option>
+				<option value="5">columnIndex 5 에 추가</option>
+			</select>	</li>
+			<li><input type="button" class="btn" onclick="addColumnMultiple()" value="추가하기"></li>
+		</ul>
+		
+		<ul class="nav_u">
+			<li>■ 열(column) 삭제 : </li>
+			<li><select id="removeSelect">
+				<option value="selectedIndex" selected="selected">선택 열(들) 삭제</option>
+				<option value="5">columnIndex 5 삭제</option>
+			</select></li>
+			<li><input type="button" class="btn" onclick="removeColumn()" value="삭제하기"></li>
+		</ul>
+		
+		<p><span class="btn" onclick="checkColumnFields()">추가, 삭제된 열의 dataField 확인하기</span></p>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:480px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

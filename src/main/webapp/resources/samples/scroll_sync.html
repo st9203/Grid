@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+<style type="text/css">
+
+.my-right-style {
+	text-align:right;
+}
+
+/* 스크롤 (수직, 수평) 썸 재정의 */
+.aui-vscrollbar .aui-scroll-thumb, .aui-hscrollbar .aui-scroll-thumb {
+	border: 1px solid #aaa;
+	border-radius : 8px;
+}
+
+</style>
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID, myGridID2;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid();
+	
+	// AUIGrid 에 데이터 삽입합니다.
+	AUIGrid.setGridData(myGridID, createRandomData(100));
+	AUIGrid.setGridData(myGridID2, createRandomData(100));
+
+};
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid() {
+	
+	var columnLayout = [];
+	
+	columnLayout[0] = { // 연도 칼럼 생성
+			headerText : "연도",
+			dataField : "year",
+			postfix : "년",
+			width:100
+	}
+	
+	for(var i=1; i<=12; i++) { // 1~12월 칼럼 생성
+		columnLayout.push( {
+			headerText : i + "월",
+			dataField : "col" + i,
+			dataType : "numeric",
+			formatString : "#,##0",
+			headerStyle : "my-right-style",
+			style : "my-right-style",
+			width:120
+		});
+	}
+	
+	// 그리드 속성 설정
+	var auiGridProps = {
+			editable : true,
+			enableFilter : true,
+			scrollHeight : 18, // 스크롤의 높이
+			scrollThumbHeight : 16, // 스크롤 썸(thumb)의 높이
+			fixedColumnCount : 1
+	};
+	
+	//------------------------- 상단 그리드 ------------------------------------------------------
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+	
+	// H스크롤 체인지 핸들러.
+	AUIGrid.bind(myGridID, "hScrollChange", function(event) {
+		//console.log(event.type + ", position : " + event.position + ", (min : " + event.minPosition + ", max : " + event.maxPosition);
+		AUIGrid.setHScrollPositionByPx(myGridID2, event.position); // 수평 스크롤 이동 시킴..
+	});
+		
+	// V스크롤 체인지 핸들러.
+	AUIGrid.bind(myGridID, "vScrollChange", function(event) {
+		//console.log(event.type + ", position : " + event.position + ", (min : " + event.minPosition + ", max : " + event.maxPosition);
+		AUIGrid.setRowPosition(myGridID2, event.position); // 수평 스크롤 이동 시킴..
+	});
+
+	//------------------------- 하단 그리드 ------------------------------------------------------
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID2 = AUIGrid.create("#grid_wrap2", columnLayout, auiGridProps);
+	
+	// H스크롤 체인지 핸들러.
+	AUIGrid.bind(myGridID2, "hScrollChange", function(event) {
+		//console.log(event.type + ", position : " + event.position + ", (min : " + event.minPosition + ", max : " + event.maxPosition);
+		AUIGrid.setHScrollPositionByPx(myGridID, event.position); // 수평 스크롤 이동 시킴...
+	});
+		
+	// V스크롤 체인지 핸들러.
+	AUIGrid.bind(myGridID2, "vScrollChange", function(event) {
+		//console.log(event.type + ", position : " + event.position + ", (min : " + event.minPosition + ", max : " + event.maxPosition);
+		AUIGrid.setRowPosition(myGridID, event.position); // 수평 스크롤 이동 시킴..
+	});
+	
+};
+
+// 주어진 개수만큼 랜덤 데이터 생성하여 그리드에 삽입
+function createRandomData(count) {
+	var data = [];
+	var row;
+	var maxYear = 2015;
+	for(var i=1; i<=count; i++) {
+		
+		row = {};
+		row.id = "PK" + i; // rowIdField 로 지정할 중복되지 않는 고유값(primary key)
+		row.year = 2015 - i;
+		for(var j=1; j<=12; j++) { // 1~12월 개별 데이터 생성
+			row["col" + j] = Math.round(Math.random() * 10000); // 모든 데이터를 랜덤 데이터로 생성
+		}
+		data.push(row);
+	}
+	
+	return data;
+};
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>두 개의 그리드의 스크롤을 동기화 시킨 모습입니다.</p>
+		<p>동기화 되어 두 그리드의 자료를 비교 분석하기에 용이합니다.</p>
+		<p>스크롤 이벤트인 hScrollChange, vScrollChange 이벤트를 활용합니다.
+	</div>
+	<div>
+		<div style="width:1200px; margin:0 auto;"><p id="detail_info" style="margin-top:20px;">A 사업부 실적</p></div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:280px; margin:0 auto;"></div>
+		
+		<div style="width:1200px; margin:0 auto;"><p id="detail_info" style="margin-top:20px;">B 사업부 실적</p></div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap2" style="width:1200px; height:280px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="hScrollInfo"></p>
+		<p id="vScrollInfo"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

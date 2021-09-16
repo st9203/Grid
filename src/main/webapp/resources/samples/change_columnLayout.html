@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid();
+	
+	// 데이터 요청, 요청 성공 시 AUIGrid 에 데이터 삽입합니다.
+	requestData("./data/normal_100.json");
+
+};
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid() {
+	
+	// 그리드 속성
+	var auiGridProps = {
+		editable : true,
+		showRowCheckColumn : true,
+		showFooter : true
+	};
+	
+	//AUIGrid 칼럼 레이아웃 설정
+	var columnLayout = [{
+			dataField : "id",
+			headerText : "ID",
+			width : 120
+		}, {
+			dataField : "name",
+			headerText : "이름",
+			width:120
+		}, {
+			dataField : "country",
+			headerText : "나라",
+			width:120
+		}, {
+			dataField : "product",
+			headerText : "제품명",
+			width:120
+		}, {
+			dataField : "color",
+			headerText : "색상",
+			width : 120
+		}, {
+			dataField : "price",
+			headerText : "가격",
+			dataType : "numeric",
+			style : "my-column-right",
+			width : 120
+		}, {
+			dataField : "quantity",
+			headerText : "개수",
+			dataType : "numeric",
+			width : 120
+		}, {
+			dataField : "date",
+			headerText : "날짜",
+			width : 120
+	}];
+	
+	// 푸터 레이아웃
+	var footerLayout = [ {
+		labelText : "∑",
+		positionField : "#base"
+	}, {
+		dataField : "price",
+		positionField : "price",
+		operation : "SUM",
+		formatString : "#,##0"
+	}];
+
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+	
+	// 푸터 설정
+	AUIGrid.setFooter(myGridID, footerLayout);
+};
+
+// 칼럼 레이아웃 변경
+function changeColumnTree() {
+	
+	//AUIGrid 칼럼 레이아웃 설정
+	var columnLayout = [{
+			dataField : "id",
+			headerText : "ID",
+			width : 120
+		}, {
+		headerText : "헤더 그룹",
+		children : [{
+						dataField : "name",
+						headerText : "이름",
+						width:120
+					}, {
+						dataField : "country",
+						headerText : "나라",
+						width:120
+					}, {
+						dataField : "product",
+						headerText : "제품명",
+						width:120
+					}]
+		}, {
+			dataField : "flag",
+			headerText : "이미지",
+			editable : false,
+			prefix : "./assets/",
+			renderer : {
+				type : "ImageRenderer",
+				imgHeight : 24,
+				altField : "country"
+			},
+			width : 120
+		}, {
+			dataField : "color",
+			headerText : "색상",
+			width : 120
+		}, {
+			dataField : "price",
+			headerText : "가격",
+			dataType : "numeric",
+			style : "my-column-right",
+			width : 120
+		}, {
+			dataField : "quantity",
+			headerText : "개수",
+			dataType : "numeric",
+			width : 120
+		}, {
+			dataField : "date",
+			headerText : "날짜",
+			width : 120
+	}];
+	
+	// 칼럼 레이아웃 변경
+	AUIGrid.changeColumnLayout(myGridID, columnLayout);
+};
+
+
+//칼럼 레이아웃 변경
+function changeColumn() {
+	
+	//AUIGrid 칼럼 레이아웃 설정
+	var columnLayout = [{
+			dataField : "id",
+			headerText : "ID",
+			width : 120
+		}, {
+			dataField : "color",
+			headerText : "색상",
+			width : 120
+		}, {
+			dataField : "price",
+			headerText : "가격",
+			dataType : "numeric",
+			style : "my-column-right",
+			width : 120
+		}, {
+			dataField : "quantity",
+			headerText : "개수",
+			dataType : "numeric",
+			width : 120
+		}, {
+			dataField : "date",
+			headerText : "날짜",
+			width : 120
+	}];
+	
+	// 칼럼 레이아웃 변경
+	AUIGrid.changeColumnLayout(myGridID, columnLayout);
+	
+};
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>기존에 작성한 칼럼 레이아웃(columnLayout) 을 다시 작성하여 변경합니다.</p>
+		<p>이는 설정한 속성 및 데이터는 기존으로 유지한 채 보여지는 칼럼의 구조만을 변경하는 것입니다.</p>
+		<p>
+			<span class="btn" onclick="changeColumnTree()">칼럼 레이아웃 변경하기 - 계층형</span>
+		</p>
+		
+		<span class="btn" onclick="changeColumn()">칼럼 레이아웃 변경하기 - 일반형</span>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:480px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

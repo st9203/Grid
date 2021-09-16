@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+
+<style type="text/css">
+
+/* 커스텀 스타일 */
+.my-group-sum-field-style {
+	font-weight:bold;
+	color:#4374D9;
+	background-color:#FAF4C0;
+}
+.my-align-right {
+	text-align:right;
+}
+</style>
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID, myGridID2;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid();
+	
+	// AUIGrid2 그리드를 생성합니다
+	createAUIGrid2();
+	
+	AUIGrid.showAjaxLoader(myGridID);
+	AUIGrid.showAjaxLoader(myGridID2);
+	// 데이터 요청, 요청 성공 시 AUIGrid 에 데이터 삽입합니다.
+	ajax({
+		url : "./data/country_phone_1000.json",
+		onSuccess : function(data) {
+			// 그리드에 데이터 세팅
+			// data 는 JSON 을 파싱한 Array-Object 입니다.
+			AUIGrid.setGridData(myGridID, data);
+			
+			AUIGrid.setGridData(myGridID2, data);
+			
+			AUIGrid.removeAjaxLoader(myGridID);
+			AUIGrid.removeAjaxLoader(myGridID2);
+		}
+	});
+};
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid() {
+	
+	var columnLayout = getColumnLayout();
+	
+	var auiGridProps = getGridProp();
+	
+	// 그룹핑 후 셀 병합 실행
+	auiGridProps.enableCellMerge = true;
+	
+	// 그룹핑 합계 필드(소계) 셀 가로 병합 실행 여부
+	auiGridProps.enableSummaryMerge = true;
+	
+	// 그룹핑 합계 필드(소계) 셀 가로 병합 실행 정책 지정
+	// * default : 자신의 이전에서만 병합 실행
+	// * all : 그룹핑 필드 지정 개수 만큼 병합 실행
+	auiGridProps.summaryMergePolicy = "default";
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+	
+	AUIGrid.bind(myGridID, "ready", function(e) {
+		AUIGrid.setRowPosition(myGridID, 1285);
+	});
+};
+
+
+//AUIGrid2 를 생성합니다.
+function createAUIGrid2() {
+	
+	var columnLayout = getColumnLayout();
+	
+	var auiGridProps = getGridProp();
+	
+	// 그룹핑 후 셀 병합 실행
+	auiGridProps.enableCellMerge = true;
+	
+	// 그룹핑 합계 필드(소계) 셀 가로 병합 실행 여부
+	auiGridProps.enableSummaryMerge = true;
+	
+	// 그룹핑 합계 필드(소계) 셀 가로 병합 실행 정책 지정
+	// * default : 자신의 이전에서만 병합 실행
+	// * all : 그룹핑 필드 지정 개수 만큼 병합 실행
+	auiGridProps.summaryMergePolicy = "all";
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID2 = AUIGrid.create("#grid_wrap2", columnLayout, auiGridProps);
+	
+	AUIGrid.bind(myGridID2, "ready", function(e) {
+		AUIGrid.setRowPosition(myGridID2, 1285);
+	});
+};
+
+
+// 기본 그리드 속성 반환.
+function getGridProp() {
+	
+	var auiGridProps = {
+			
+			// 차례로 country, product, name 순으로 그룹핑을 합니다.
+			// 즉, 각 나라별, 각 제품을 구매한 사용자로 그룹핑
+			groupingFields : ["country", "product", "name"],
+			
+			// 그룹핑 썸머리 설정
+			groupingSummary  : {
+				// 합계 필드는 price 1개에 대하여 실시 합니다.
+				dataFields : [ "price" ]
+			},
+			
+			// 브랜치에 해당되는 행을 출력 여부
+			showBranchOnGrouping : false,
+			
+			// 그리드 ROW 스타일 함수 정의
+			rowStyleFunction : function(rowIndex, item) {
+				
+				if(item._$isGroupSumField) { // 그룹핑으로 만들어진 합계 필드인지 여부
+					
+					// 그룹핑을 더 많은 필드로 하여 depth 가 많아진 경우는 그에 맞게 스타일을 정의하십시오.
+					// 현재 3개의 스타일이 기본으로 정의됨.(AUIGrid_style.css)
+					switch(item._$depth) {  // 계층형의 depth 비교 연산
+					case 2:
+						return "aui-grid-row-depth1-style";
+					case 3:
+						return "aui-grid-row-depth2-style";
+					case 4:
+						return "aui-grid-row-depth3-style";
+					default:
+						return "aui-grid-row-depth-default-style";
+					}
+				}
+				
+				return null;
+			} // end of rowStyleFunction
+	};
+	
+	return auiGridProps;
+};
+
+// 칼럼 레이아웃 반환.
+function getColumnLayout() {
+	//AUIGrid 칼럼 설정
+	var columnLayout = [ {
+			dataField : "country",
+			headerText : "Country",
+			styleFunction : function(rowIndex, columnIndex, value, headerText, item, dataField) {
+				if(item._$isGroupSumField) 
+					return "my-group-sum-field-style";
+				return null;
+			}
+		},  {
+			dataField : "name",
+			headerText : "Name"
+		}, {
+			dataField : "orderId",
+			headerText : "Order ID"
+		}, {
+			dataField : "phone",
+			headerText : "Phone"
+		}, {
+			dataField : "product",
+			headerText : "Product"
+		}, {
+			dataField : "color",
+			headerText : "Color"
+		}, {
+			dataField : "price",
+			headerText : "Price",
+			dataType : "numeric",
+			style : "my-align-right"
+		},{
+			dataField : "date",
+			headerText : "Date"
+		}
+	];
+	
+	return columnLayout;
+}
+
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>소계 기본형(Type 1) 에서 ["country", "product", "name"] 으로 그룹핑 후 그룹핑 합계(소계)로 출력된 행을 가로 병합하여 출력한 모습입니다.</p>
+		<p>소계 기본형(Type 1) 에서만 가능합니다. (즉, fillValueGroupingSummary=false 인 경우만 가능)</p>
+		<p>그룹핑 시 그룹핑 합계(소계)를 가로 병합 하기 위해서는 다음 속성을 선행적으로 설정해야 합니다.</p>
+<div class="src_cover"><pre>
+// 그룹핑 후 셀 병합 실행
+auiGridProps.enableCellMerge = true;
+	
+// 그룹핑 합계 필드(소계) 셀 가로 병합 실행 여부
+auiGridProps.enableSummaryMerge = true;
+</pre></div>
+		<p>여기서 그룹핑 소계 가로 병합 정책(summaryMergePolicy)의 설정 값에 따라 다르게 표현된 그리드의 모습입니다. </p>
+		<p>summaryMergePolicy = "default" (기본값) : 자신의 이전에 대해서만 가로 셀 병합을 실행합니다.</p>
+		<p>summaryMergePolicy = "all" : 그룹핑 필드 지정 개수 만큼 가로 셀 병합을 실행합니다.</p>
+	</div>
+	<div>
+		<h1 style="margin-left:30px;">■ summaryMergePolicy = "default" 설정 (기본값)</h1>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:200px; margin:0 auto;"></div>
+	</div>
+	
+	<div style="margin-top:10px;">
+		<h1 style="margin-left:30px;">■ summaryMergePolicy = "all" 설정</h1>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap2" style="width:1200px; height:200px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+		
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="viewport" content="width=800">
+<meta name="og:title" content="HTML5, 자바스크립트 데이터그리드 AUIGrid">
+<meta name="og:url" content="http://www.auisoft.net/">
+<meta name="og:description" content="HTML5, 자바스크립트 데이타그리드(javascript datagrid) AUISoft">
+<title>AUIGrid 데모, HTML5, 자바스크립트 데이터그리드 AUIGrid</title>
+<link href="http://www.auisoft.net/aui.ico" rel="shortcut icon" />
+
+<!-- 데모 구성용 CSS 입니다. 실제 프로젝트에서는 불필요 하니 추가할 필요 없습니다. -->
+<link href="./demo.css" rel="stylesheet">
+
+<!-- ajax 요청을 위한 스크립트입니다. -->
+<!-- jQuery 사용한다면, 해당 2개의 JS는 불필요 합니다.  -->
+<script type="text/javascript" src="./ajax.js"></script>
+<script type="text/javascript" src="./common.js"></script>
+
+<!-- AUIGrid 테마 CSS 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<!-- 원하는 테마가 있다면, 다른 파일로 교체 하십시오. -->
+<link href="../AUIGrid/AUIGrid_style.css" rel="stylesheet">
+
+<!-- AUIGrid 라이센스 파일입니다. 그리드 출력을 위해 꼭 삽입하십시오. -->
+<script type="text/javascript" src="../AUIGrid/AUIGridLicense.js"></script>
+
+<!-- 실제적인 AUIGrid 라이브러리입니다. 그리드 출력을 위해 꼭 삽입하십시오.--> 
+<script type="text/javascript" src="../AUIGrid/AUIGrid.js"></script>
+<style type="text/css">
+/* 커스텀 행 스타일 */
+.my-row-style {
+	font-weight:bold;
+	color:#ff0000;
+}
+</style>
+
+
+<script type="text/javascript">
+
+// AUIGrid 생성 후 반환 ID
+var myGridID;
+
+// document ready (jQuery 의 $(document).ready(function() {}); 과 같은 역할을 합니다.
+function documentReady() {  
+	
+	// AUIGrid 그리드를 생성합니다.
+	createAUIGrid(columnLayout);
+	
+	// 그리드 데이터 삽입
+	AUIGrid.setGridData(myGridID, gridData);
+
+};
+
+// AUIGrid 칼럼 설정
+var columnLayout = [ {
+			dataField : "f1",
+			headerText : "A",
+			cellColMerge : true, // 셀 가로 병합 실행
+			cellColSpan : 6, // 셀 가로 병합 대상은 6개로 설정
+			width : 160
+		}, {
+			dataField : "f2",
+			headerText : "B",
+			width : 160
+		}, {
+			dataField : "f3",
+			headerText : "C",
+			width : 160
+		}, {
+			dataField : "f4",
+			headerText : "D",
+			width : 160
+		}, {
+			dataField : "f5",
+			headerText : "E",
+			width : 160
+		}, {
+			dataField : "f6",
+			headerText : "F",
+			width : 160
+	} ];
+
+// AUIGrid 를 생성합니다.
+function createAUIGrid(columnLayout) {
+	
+	var auiGridProps = {
+			editable : true,
+			
+			// 셀 병합 실행
+			enableCellMerge : true,
+			
+			// 가로병합 실행 여부 결정 함수
+			// 이 함수는 렌더링 시 빈번히 호출됩니다. 무리한 DOM 작업 하지 마십시오. (성능에 영향을 미침)
+			cellColMergeFunction : function(rowIndex, columnIndex, item) {
+				// item 에 noColMerge 가 true 인 행이 있다면 가로 병합 시키지 않음.
+				if(item.noColMerge === true) {
+					return false; // false 를 반환하면 해당 행은 가로 병합 하지 않습니다.
+				}
+				return true;
+			},
+			
+			// row Styling 함수
+			rowStyleFunction : function(rowIndex, item) {
+				if(item.noColMerge === true) {
+					return "my-row-style";
+				}
+				return "";
+			}
+
+	};
+	
+	// 실제로 #grid_wrap 에 그리드 생성
+	myGridID = AUIGrid.create("#grid_wrap", columnLayout, auiGridProps);
+};
+
+var isMerged = true; // 최초에는 merged 상태
+function setCellMerge() {
+		isMerged = !isMerged;
+		AUIGrid.setCellMerge(myGridID, isMerged);
+};
+
+// 그리드 데이터
+var gridData = [{"f1":"값 : B","f2":"값 : A","f3":"값 : B","f4":"값 : A","f5":"값 : A","f6":"값 : A", "noColMerge":true},{"f1":"값 : B","f2":"값 : A","f3":"값 : A","f4":"값 : C","f5":"값 : B","f6":"값 : A"},{"f1":"값 : C","f2":"값 : C","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : C","noColMerge":true},{"f1":"값 : B","f2":"값 : B","f3":"값 : A","f4":"값 : A","f5":"값 : C","f6":"값 : A"},{"f1":"값 : B","f2":"값 : B","f3":"값 : A","f4":"값 : B","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : B","f3":"값 : C","f4":"값 : C","f5":"값 : C","f6":"값 : B"},{"f1":"값 : A","f2":"값 : A","f3":"값 : C","f4":"값 : B","f5":"값 : C","f6":"값 : B"},{"f1":"값 : C","f2":"값 : B","f3":"값 : C","f4":"값 : B","f5":"값 : B","f6":"값 : B"},{"f1":"값 : A","f2":"값 : C","f3":"값 : C","f4":"값 : B","f5":"값 : C","f6":"값 : C"},{"f1":"값 : A","f2":"값 : B","f3":"값 : C","f4":"값 : B","f5":"값 : C","f6":"값 : A"},{"f1":"값 : C","f2":"값 : C","f3":"값 : A","f4":"값 : A","f5":"값 : A","f6":"값 : A"},{"f1":"값 : A","f2":"값 : B","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : C"},{"f1":"값 : A","f2":"값 : C","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : A"},{"f1":"값 : B","f2":"값 : B","f3":"값 : A","f4":"값 : B","f5":"값 : B","f6":"값 : B"},{"f1":"값 : A","f2":"값 : A","f3":"값 : B","f4":"값 : B","f5":"값 : A","f6":"값 : C"},{"f1":"값 : B","f2":"값 : C","f3":"값 : C","f4":"값 : B","f5":"값 : B","f6":"값 : A"},{"f1":"값 : A","f2":"값 : C","f3":"값 : A","f4":"값 : A","f5":"값 : B","f6":"값 : C"},{"f1":"값 : B","f2":"값 : C","f3":"값 : B","f4":"값 : C","f5":"값 : C","f6":"값 : B"},{"f1":"값 : A","f2":"값 : C","f3":"값 : B","f4":"값 : C","f5":"값 : C","f6":"값 : A"},{"f1":"값 : A","f2":"값 : B","f3":"값 : C","f4":"값 : C","f5":"값 : C","f6":"값 : B"},{"f1":"값 : B","f2":"값 : A","f3":"값 : B","f4":"값 : A","f5":"값 : C","f6":"값 : B"},{"f1":"값 : C","f2":"값 : B","f3":"값 : B","f4":"값 : B","f5":"값 : C","f6":"값 : B"},{"f1":"값 : B","f2":"값 : C","f3":"값 : C","f4":"값 : B","f5":"값 : C","f6":"값 : B"},{"f1":"값 : C","f2":"값 : A","f3":"값 : C","f4":"값 : A","f5":"값 : B","f6":"값 : C"},{"f1":"값 : A","f2":"값 : B","f3":"값 : A","f4":"값 : A","f5":"값 : A","f6":"값 : A"},{"f1":"값 : A","f2":"값 : A","f3":"값 : C","f4":"값 : B","f5":"값 : C","f6":"값 : C"},{"f1":"값 : B","f2":"값 : A","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : C"},{"f1":"값 : A","f2":"값 : B","f3":"값 : B","f4":"값 : A","f5":"값 : B","f6":"값 : C"},{"f1":"값 : A","f2":"값 : A","f3":"값 : B","f4":"값 : B","f5":"값 : B","f6":"값 : B"},{"f1":"값 : A","f2":"값 : A","f3":"값 : A","f4":"값 : A","f5":"값 : A","f6":"값 : B"},{"f1":"값 : C","f2":"값 : A","f3":"값 : A","f4":"값 : B","f5":"값 : A","f6":"값 : B"},{"f1":"값 : C","f2":"값 : A","f3":"값 : C","f4":"값 : C","f5":"값 : C","f6":"값 : B"},{"f1":"값 : A","f2":"값 : B","f3":"값 : B","f4":"값 : B","f5":"값 : C","f6":"값 : C"},{"f1":"값 : B","f2":"값 : A","f3":"값 : B","f4":"값 : C","f5":"값 : B","f6":"값 : B"},{"f1":"값 : A","f2":"값 : B","f3":"값 : A","f4":"값 : B","f5":"값 : C","f6":"값 : A"},{"f1":"값 : B","f2":"값 : B","f3":"값 : A","f4":"값 : B","f5":"값 : A","f6":"값 : C"},{"f1":"값 : C","f2":"값 : C","f3":"값 : C","f4":"값 : B","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : A","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : A","f3":"값 : B","f4":"값 : C","f5":"값 : A","f6":"값 : C"},{"f1":"값 : C","f2":"값 : B","f3":"값 : B","f4":"값 : A","f5":"값 : C","f6":"값 : C"},{"f1":"값 : A","f2":"값 : A","f3":"값 : B","f4":"값 : C","f5":"값 : C","f6":"값 : C"},{"f1":"값 : B","f2":"값 : C","f3":"값 : A","f4":"값 : B","f5":"값 : B","f6":"값 : A"},{"f1":"값 : B","f2":"값 : C","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : B"},{"f1":"값 : A","f2":"값 : A","f3":"값 : B","f4":"값 : A","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : B","f3":"값 : A","f4":"값 : C","f5":"값 : B","f6":"값 : C"},{"f1":"값 : B","f2":"값 : C","f3":"값 : B","f4":"값 : C","f5":"값 : C","f6":"값 : A"},{"f1":"값 : C","f2":"값 : B","f3":"값 : A","f4":"값 : A","f5":"값 : B","f6":"값 : C"},{"f1":"값 : B","f2":"값 : A","f3":"값 : C","f4":"값 : A","f5":"값 : C","f6":"값 : C"},{"f1":"값 : B","f2":"값 : B","f3":"값 : B","f4":"값 : B","f5":"값 : C","f6":"값 : C"},{"f1":"값 : A","f2":"값 : A","f3":"값 : A","f4":"값 : B","f5":"값 : A","f6":"값 : B"},{"f1":"값 : C","f2":"값 : B","f3":"값 : B","f4":"값 : C","f5":"값 : A","f6":"값 : C"},{"f1":"값 : A","f2":"값 : A","f3":"값 : A","f4":"값 : B","f5":"값 : A","f6":"값 : C"},{"f1":"값 : A","f2":"값 : B","f3":"값 : B","f4":"값 : B","f5":"값 : C","f6":"값 : B"},{"f1":"값 : B","f2":"값 : B","f3":"값 : C","f4":"값 : A","f5":"값 : B","f6":"값 : B"},{"f1":"값 : A","f2":"값 : B","f3":"값 : B","f4":"값 : C","f5":"값 : B","f6":"값 : B"},{"f1":"값 : B","f2":"값 : A","f3":"값 : A","f4":"값 : C","f5":"값 : C","f6":"값 : C"},{"f1":"값 : B","f2":"값 : A","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : C"},{"f1":"값 : B","f2":"값 : B","f3":"값 : C","f4":"값 : C","f5":"값 : C","f6":"값 : B"},{"f1":"값 : C","f2":"값 : C","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : B"},{"f1":"값 : A","f2":"값 : A","f3":"값 : A","f4":"값 : B","f5":"값 : B","f6":"값 : B"},{"f1":"값 : A","f2":"값 : A","f3":"값 : C","f4":"값 : B","f5":"값 : C","f6":"값 : A"},{"f1":"값 : B","f2":"값 : C","f3":"값 : C","f4":"값 : B","f5":"값 : B","f6":"값 : A"},{"f1":"값 : B","f2":"값 : B","f3":"값 : C","f4":"값 : A","f5":"값 : A","f6":"값 : A"},{"f1":"값 : B","f2":"값 : A","f3":"값 : B","f4":"값 : B","f5":"값 : C","f6":"값 : B"},{"f1":"값 : A","f2":"값 : A","f3":"값 : A","f4":"값 : B","f5":"값 : C","f6":"값 : B"},{"f1":"값 : A","f2":"값 : A","f3":"값 : A","f4":"값 : C","f5":"값 : A","f6":"값 : C"},{"f1":"값 : B","f2":"값 : B","f3":"값 : C","f4":"값 : A","f5":"값 : B","f6":"값 : B"},{"f1":"값 : C","f2":"값 : B","f3":"값 : C","f4":"값 : B","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : C","f3":"값 : C","f4":"값 : A","f5":"값 : A","f6":"값 : B"},{"f1":"값 : B","f2":"값 : C","f3":"값 : C","f4":"값 : C","f5":"값 : C","f6":"값 : B"},{"f1":"값 : A","f2":"값 : C","f3":"값 : A","f4":"값 : C","f5":"값 : C","f6":"값 : B"},{"f1":"값 : A","f2":"값 : A","f3":"값 : B","f4":"값 : C","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : C","f3":"값 : B","f4":"값 : A","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : B","f3":"값 : B","f4":"값 : C","f5":"값 : C","f6":"값 : C"},{"f1":"값 : A","f2":"값 : C","f3":"값 : B","f4":"값 : C","f5":"값 : B","f6":"값 : B"},{"f1":"값 : A","f2":"값 : B","f3":"값 : B","f4":"값 : C","f5":"값 : B","f6":"값 : A"},{"f1":"값 : C","f2":"값 : A","f3":"값 : C","f4":"값 : C","f5":"값 : C","f6":"값 : C"},{"f1":"값 : C","f2":"값 : A","f3":"값 : C","f4":"값 : B","f5":"값 : A","f6":"값 : B"},{"f1":"값 : B","f2":"값 : A","f3":"값 : C","f4":"값 : A","f5":"값 : B","f6":"값 : A"},{"f1":"값 : A","f2":"값 : C","f3":"값 : C","f4":"값 : B","f5":"값 : A","f6":"값 : C"},{"f1":"값 : A","f2":"값 : B","f3":"값 : C","f4":"값 : C","f5":"값 : B","f6":"값 : C"},{"f1":"값 : A","f2":"값 : A","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : A","f3":"값 : A","f4":"값 : B","f5":"값 : C","f6":"값 : A"},{"f1":"값 : C","f2":"값 : A","f3":"값 : B","f4":"값 : B","f5":"값 : A","f6":"값 : B"},{"f1":"값 : A","f2":"값 : C","f3":"값 : C","f4":"값 : A","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : C","f3":"값 : A","f4":"값 : B","f5":"값 : C","f6":"값 : C"},{"f1":"값 : C","f2":"값 : B","f3":"값 : B","f4":"값 : C","f5":"값 : A","f6":"값 : C"},{"f1":"값 : C","f2":"값 : B","f3":"값 : A","f4":"값 : C","f5":"값 : B","f6":"값 : A"},{"f1":"값 : C","f2":"값 : B","f3":"값 : A","f4":"값 : C","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : B","f3":"값 : B","f4":"값 : A","f5":"값 : A","f6":"값 : B"},{"f1":"값 : B","f2":"값 : B","f3":"값 : A","f4":"값 : C","f5":"값 : B","f6":"값 : A"},{"f1":"값 : C","f2":"값 : A","f3":"값 : C","f4":"값 : C","f5":"값 : A","f6":"값 : B"},{"f1":"값 : A","f2":"값 : C","f3":"값 : B","f4":"값 : C","f5":"값 : A","f6":"값 : A"},{"f1":"값 : A","f2":"값 : C","f3":"값 : B","f4":"값 : A","f5":"값 : B","f6":"값 : C"},{"f1":"값 : B","f2":"값 : C","f3":"값 : B","f4":"값 : B","f5":"값 : A","f6":"값 : B"},{"f1":"값 : C","f2":"값 : B","f3":"값 : A","f4":"값 : A","f5":"값 : A","f6":"값 : A"},{"f1":"값 : C","f2":"값 : A","f3":"값 : C","f4":"값 : B","f5":"값 : A","f6":"값 : C"},{"f1":"값 : A","f2":"값 : B","f3":"값 : C","f4":"값 : A","f5":"값 : B","f6":"값 : A"},{"f1":"값 : A","f2":"값 : A","f3":"값 : A","f4":"값 : A","f5":"값 : C","f6":"값 : B"},{"f1":"값 : B","f2":"값 : C","f3":"값 : A","f4":"값 : B","f5":"값 : B","f6":"값 : B"}];
+</script>
+
+</head>
+<body>
+
+<div id="main">
+	<div class="desc">
+		<p>셀 가로 병합은 같은 행에서 가로 값이 같다면 자동으로 병합하여 출력을 시킵니다.</p>
+		<p>그러나 특정 조건에서 가로 병합을 하지 않도록 지시할 수 있습니다.</p>
+		<p>데모는 행에 noColMerge 값이 있다면 가로 병합 하지 않도록 지시했습니다.(1행과 3행임)</p>
+<div class="src_cover"><pre>
+// 가로병합 실행 여부 결정 함수
+// 이 함수는 렌더링 시 빈번히 호출됩니다. 무리한 DOM 작업 하지 마십시오. (성능에 영향을 미침)
+cellColMergeFunction : function(rowIndex, columnIndex, item) {
+	// item 에 noColMerge 가 true 인 행이 있다면 가로 병합 시키지 않음.
+	if(item.noColMerge === true) {
+		return false; // false 를 반환하면 해당 행은 가로 병합 하지 않습니다.
+	}
+	return true; // true 는 가로 병합 실행
+}
+</pre></div>
+	</div>
+	<div>
+		<!-- 에이유아이 그리드가 이곳에 생성됩니다. -->
+		<div id="grid_wrap" style="width:1200px; height:380px; margin:0 auto;"></div>
+	</div>
+	<div class="desc_bottom">
+		<p id="ellapse"></p>
+	</div>
+</div>
+<div id="footer">
+     <div class="copyright">
+        <p>Copyright ©2021 AUISoft </p>
+    </div>
+</div>
+
+</body>
+</html>
